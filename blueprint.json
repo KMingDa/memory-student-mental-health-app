@@ -2,22 +2,5 @@
   "name": "student-mental-health-companion",
   "description": "An interactive mental health companion app for students with journaling, AI-powered mood prediction, gamification, and self-care tools.",
   "readme": "./blueprint.md",
-  "output": "./README.md",
-  "badges": [
-    {
-      "image": "https://img.shields.io/badge/License-MIT-green.svg",
-      "alt": "MIT License",
-      "link": "LICENSE"
-    },
-    {
-      "image": "https://img.shields.io/github/issues/yourusername/student-mental-health-companion",
-      "alt": "GitHub issues",
-      "link": "https://github.com/yourusername/student-mental-health-companion/issues"
-    },
-    {
-      "image": "https://img.shields.io/github/stars/yourusername/student-mental-health-companion",
-      "alt": "GitHub stars",
-      "link": "https://github.com/yourusername/student-mental-health-companion/stargazers"
-    }
-  ]
+  "output": "./README.md"
 }
