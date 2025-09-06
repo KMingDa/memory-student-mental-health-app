@@ -1,0 +1,39 @@
+{
+  "name": "App Name",
+  "description": "An interactive mental health companion app for students combining journaling, AI-powered mood prediction, gamification, and self-care tools.",
+  "sections": [
+    {
+      "title": "Key Features",
+      "items": [
+        "Avatar Creation",
+        "Mood Journaling & Prediction",
+        "LLM-based Companion",
+        "Interactive Room Environment",
+        "Self-Care Journey & Rewards",
+        "Mini Games",
+        "Positivity Leaderboard",
+        "Daily Mental Health News"
+      ]
+    },
+    {
+      "title": "Tech Stack",
+      "items": [
+        "Frontend: React Native, Unity / Phaser.js / Godot / React Native Canvas",
+        "Backend: FastAPI, PostgreSQL / MongoDB",
+        "AI & ML: Python, NLTK, Jieba, scikit-learn, optional PyTorch/TensorFlow, OpenAI API or open-source LLM"
+      ]
+    },
+    {
+      "title": "System Blueprints",
+      "items": [
+        "Avatar Creation & Interactive Room",
+        "Mood Prediction & Journaling",
+        "LLM-based Companion",
+        "Self-Care & Rewards",
+        "Mini Games",
+        "Leaderboard",
+        "Daily News"
+      ]
+    }
+  ]
+}
