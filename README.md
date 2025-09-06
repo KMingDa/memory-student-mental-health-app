@@ -3,10 +3,6 @@
 
 # ➤ 🌱 Student Mental Health Companion App
 
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![GitHub issues](https://img.shields.io/github/issues/yourusername/student-mental-health-companion)](https://github.com/yourusername/student-mental-health-companion/issues)
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/student-mental-health-companion)](https://github.com/yourusername/student-mental-health-companion/stargazers)
-
 ---
 
 
@@ -22,40 +18,40 @@ App name is designed specifically for students as a complement to existing suppo
 
 ## ➤ ✨ Key Features
 
-### 🎭 Avatar Creation
-Students create their own avatar as a digital projection of themselves.  
-The avatar reacts to the user’s mood and activities, acting as a personal emotional projection.
+### 1. 🎭 Avatar Creation
+- Students create their own avatar as a digital projection of themselves.  
+- The avatar reacts to the user’s mood and activities, acting as a personal emotional projection.
 
-### 📝 Mood Journaling & Prediction
-Students write daily diary entries and select their mood.  
-AI combines today’s mood, diary content, and yesterday’s prediction to forecast tomorrow’s mood.
+### 2. 📝 Mood Journaling & Prediction
+- Students write daily diary entries and select their mood.  
+- AI combines today’s mood, diary content, and yesterday’s prediction to forecast tomorrow’s mood.
 
-### 🤖 LLM-based Companion
+### 3. 🤖 LLM-based Companion
 An AI chatbot acts as a friendly companion (disguised as a doll or plush character) and interacts with students.  
 Example:  
 - If the predicted mood is positive, the avatar encourages sharing joy when students open the app.  
 - If the student feels sad, the avatar might initiate a comforting message.  
 - The room environment also adapts (e.g., lights dim, rain outside the window).
 
-### 🏡 Interactive Room Environment
-The avatar’s room changes according to the student’s emotional state.  
-Example: clicking bed when tired → avatar encourages rest (“Today was a lot. It's okay to rest.”).
+### 4. 🏡 Interactive Room Environment
+- The avatar’s room changes according to the student’s emotional state.  
+- Example: clicking bed when tired → avatar encourages rest (“Today was a lot. It's okay to rest.”).
 
-### 🌱 Self-Care Journey & Rewards
-Small activities like meditation, breathing exercises, or white noise listening.  
-Completing tasks gives rewards that can be used to decorate the avatar’s room.
+### 5. 🌱 Self-Care Journey & Rewards
+- Small activities like meditation, breathing exercises, or white noise listening.  
+- Completing tasks gives rewards that can be used to decorate the avatar’s room.
 
-### 🎮 Mini Games
+### 6. 🎮 Mini Games
 - Bookshelf Sorting Game → promotes focus and relaxation.  
 - Whack-a-Mole Game → stress relief and fun.  
 Rewards from games can be spent on unlocking badges or cards.
 
-### 🏆 Positivity Leaderboard
-Encourages consistent engagement through healthy competition.  
-Example: leaderboard on self-care activities completed or rewards earned.
+### 7. 🏆 Positivity Leaderboard
+- Encourages consistent engagement through healthy competition.  
+- Example: leaderboard on self-care activities completed or rewards earned.
 
-### 📰 Daily Mental Health News
-Bite-sized updates about mental health awareness and coping strategies.
+### 8. 📰 Daily Mental Health News
+- Bite-sized updates about mental health awareness and coping strategies.
 
 ---
 
@@ -89,7 +85,7 @@ Bite-sized updates about mental health awareness and coping strategies.
 
 ## ➤ 🏗️ Modules & Implementation
 
-### 🎭 Avatar Creation & Interactive Room
+### 1. 🎭 Avatar Creation & Interactive Room
 **Objective:** Provide an avatar and interactive environment that mirrors and responds to the student’s emotional state.  
 
 **How to achieve:**  
@@ -104,7 +100,7 @@ Bite-sized updates about mental health awareness and coping strategies.
 
 ---
 
-### 📝 Mood Prediction/Mood Journaling (ML Core)
+### 2. 📝 Mood Prediction/Mood Journaling (ML Core)
 **Problem:** Using users' daily diaries (text) + emotional tags assigned by users on the same day to predict ‘tomorrow's mood’. The objective is to enhance users' self-awareness and enable early intervention.  
 
 **How to achieve:**  
@@ -124,7 +120,7 @@ Bite-sized updates about mental health awareness and coping strategies.
 
 ---
 
-### 🤖 LLM-based Companion
+### 3. 🤖 LLM-based Companion
 **Objective:** Provide a conversational AI disguised as a doll/plush character to interact empathetically.  
 
 **How to achieve:**  
@@ -140,7 +136,7 @@ Bite-sized updates about mental health awareness and coping strategies.
 
 ---
 
-### 🌱 Self-Care Journey & Rewards
+### 4. 🌱 Self-Care Journey & Rewards
 **Objective:** Encourage daily wellness practices through gamified tasks and positive reinforcement.  
 
 **How to achieve:**  
@@ -155,7 +151,7 @@ Bite-sized updates about mental health awareness and coping strategies.
 
 ---
 
-### 🎮 Mini Games
+### 5. 🎮 Mini Games
 **Objective:** Provide casual mini-games that offer relaxation while reinforcing engagement.  
 
 **How to achieve:**  
@@ -170,7 +166,7 @@ Bite-sized updates about mental health awareness and coping strategies.
 
 ---
 
-### 🏆 Positivity Leaderboard
+### 6. 🏆 Positivity Leaderboard
 **Objective:** Encourage healthy competition and sustained engagement by rewarding positive habits.  
 
 **How to achieve:**  
@@ -185,7 +181,7 @@ Bite-sized updates about mental health awareness and coping strategies.
 
 ---
 
-### 📰 Daily News
+### 7. 📰 Daily News
 **Objective:** Provide short, accessible mental health updates to raise awareness and promote self-care education.  
 
 **How to achieve:**  
