@@ -1,15 +1,14 @@
 <!-- ⚠️ This README has been generated from the file(s) "blueprint.md" ⚠️-->
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#-student-mental-health-companion-app)
 
-# ➤ 🌱 Student Mental Health Companion App
-
+# ➤ 🌱 Memory - Student Mental Health App
 ---
 
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#-overview)
 
 ## ➤ 📖 Overview
-MEMORY is designed specifically for students as a complement to existing support systems. It provides students with an interactive mental health companion and a safe space for self-expression and emotional reflection. It combines journaling, AI-powered mood prediction, gamification, and self-care tools to create a supportive daily experience.
+Memory is designed specifically for students as a complement to existing support systems. It provides students with an interactive mental health companion and a safe space for self-expression and emotional reflection. It combines journaling, AI-powered mood prediction, gamification, and self-care tools to create a supportive daily experience.
 
 ---
 
