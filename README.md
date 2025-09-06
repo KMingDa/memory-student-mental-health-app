@@ -61,7 +61,7 @@ Rewards from games can be spent on unlocking badges or cards.
 
 ### 🎨 Frontend
 - React Native (cross-platform mobile app)  
-- Unity / Phaser.js / Godot / React Native Canvas (for avatar, interactive room, and mini-games rendering)
+- Unity / Phaser.js (for avatar, interactive room, and mini-games rendering)
 
 ### ⚙️ Backend
 - FastAPI (API server, user management, activity tracking)  
@@ -94,7 +94,7 @@ Rewards from games can be spent on unlocking badges or cards.
 
 **Tech framework:**  
 - React Native  
-- Unity/Phaser.js/Godot/React Native Canvas  
+- Unity/Phaser.js
 - FastAPI Backend  
 
 ---
@@ -111,7 +111,7 @@ Rewards from games can be spent on unlocking badges or cards.
 
 **Tech framework:**  
 - FastAPI  
-- PostgreSQL/MongoDB  
+- MongoDB  
 - Python NLP libraries  
 - NLTK  
 - Jieba (for Chinese text)  
@@ -146,7 +146,7 @@ Rewards from games can be spent on unlocking badges or cards.
 **Tech framework:**  
 - React Native  
 - FastAPI backend  
-- Database  
+- MongoDB
 
 ---
 
@@ -159,9 +159,9 @@ Rewards from games can be spent on unlocking badges or cards.
 - Game rewards are tied into self-care economy for consistency.  
 
 **Tech framework:**  
-- Unity/Phaser.js/Godot/React Native Canvas  
+- Unity/Phaser.js 
 - FastAPI backend  
-- Database  
+- MongoDB
 
 ---
 
@@ -176,7 +176,7 @@ Rewards from games can be spent on unlocking badges or cards.
 **Tech framework:**  
 - React Native  
 - FastAPI backend  
-- Database  
+- MongoDB
 
 ---
 
@@ -190,4 +190,4 @@ Rewards from games can be spent on unlocking badges or cards.
 **Tech framework:**  
 - React Native  
 - FastAPI backend  
-- Database  
+- MongoDB
