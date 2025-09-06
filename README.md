@@ -9,7 +9,7 @@
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#-overview)
 
 ## ➤ 📖 Overview
-App name is designed specifically for students as a complement to existing support systems. It provides students with an interactive mental health companion and a safe space for self-expression and emotional reflection. It combines journaling, AI-powered mood prediction, gamification, and self-care tools to create a supportive daily experience.
+MEMORY is designed specifically for students as a complement to existing support systems. It provides students with an interactive mental health companion and a safe space for self-expression and emotional reflection. It combines journaling, AI-powered mood prediction, gamification, and self-care tools to create a supportive daily experience.
 
 ---
 
@@ -66,7 +66,7 @@ Rewards from games can be spent on unlocking badges or cards.
 
 ### ⚙️ Backend
 - FastAPI (API server, user management, activity tracking)  
-- PostgreSQL / MongoDB (database for storing user diaries, moods, rewards, leaderboard data, news)
+- MongoDB (database for storing user diaries, moods, rewards, leaderboard data, news)
 
 ### 🧠 AI & ML
 - Python (ML core implementation)  
