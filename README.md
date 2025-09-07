@@ -3,9 +3,8 @@
 
 # ➤ 🌱 Memory - Student Mental Health App
 <p align="center">
-  <img src="images/88f8265ad461f7e9501f651e69424dce14fb2e36.png" alt="App Cover" width="600"/>
+  <img src="images/88f8265ad461f7e9501f651e69424dce14fb2e36.png" alt="App Cover" width="400"/>
 </p>
----
 
 
 [![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#-overview)
