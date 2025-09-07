@@ -202,3 +202,35 @@ Rewards from games can be spent on unlocking badges or cards.
 - Tammy Wong Ee Xien (https://github.com/devxous)  
 - Muhammad Eusoff (https://github.com/ae1207)
 - KERK MING DA (https://github.com/KMingDa)
+
+## 👥 Contributors
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/aidasakinah">
+        <img src="https://avatars.githubusercontent.com/aidasakinah" width="100px;" alt="Aida Sakinah binti Kahirol"/><br />
+        <sub><b>Aida Sakinah binti Kahirol</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/devxous">
+        <img src="https://avatars.githubusercontent.com/devxous" width="100px;" alt="Tammy Wong Ee Xien"/><br />
+        <sub><b>Tammy Wong Ee Xien</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/ae1207">
+        <img src="https://avatars.githubusercontent.com/ae1207" width="100px;" alt="Muhammad Eusoff"/><br />
+        <sub><b>Muhammad Eusoff</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/KMingDa">
+        <img src="https://avatars.githubusercontent.com/KMingDa" width="100px;" alt="KERK MING DA"/><br />
+        <sub><b>KERK MING DA</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
+
