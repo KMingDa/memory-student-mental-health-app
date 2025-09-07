@@ -198,13 +198,6 @@ Rewards from games can be spent on unlocking badges or cards.
 
 ## 👥 Contributors
 
-- Aida Sakinah binti Kahirol (https://github.com/aidasakinah)
-- Tammy Wong Ee Xien (https://github.com/devxous)  
-- Muhammad Eusoff (https://github.com/ae1207)
-- KERK MING DA (https://github.com/KMingDa)
-
-## 👥 Contributors
-
 <table>
   <tr>
     <td align="center">
