@@ -1,7 +1,4 @@
-<!-- ⚠️ This README has been generated from the file(s) "blueprint.md" ⚠️-->
-[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#app-name)
-
-# ➤ App Name
+# App Name
 
 App Name is designed specifically for students as a complement to existing support systems.  
 It provides students with an **interactive mental health companion** and a **safe space** for self-expression and emotional reflection.  
@@ -10,10 +7,7 @@ It combines **journaling**, **AI-powered mood prediction**, **gamification**, an
 
 ---
 
-
-[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#-key-features)
-
-## ➤ ✨ Key Features
+## ✨ Key Features
 
 ### 🎭 Avatar Creation
 - Students create their own avatar as a digital projection of themselves.  
@@ -52,10 +46,7 @@ It combines **journaling**, **AI-powered mood prediction**, **gamification**, an
 
 ---
 
-
-[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#-tech-stack)
-
-## ➤ 🛠 Tech Stack
+## 🛠 Tech Stack
 
 **Frontend**  
 - React Native (cross-platform mobile app)  
@@ -74,10 +65,7 @@ It combines **journaling**, **AI-powered mood prediction**, **gamification**, an
 
 ---
 
-
-[![-----------------------------------------------------](https://raw.githubusercontent.com/andreasbm/readme/master/assets/lines/colored.png)](#-system-blueprints)
-
-## ➤ 📌 System Blueprints
+## 📌 System Blueprints
 
 ### Avatar Creation & Interactive Room
 - Built with Unity/Phaser.js/Godot/React Native Canvas.  
