@@ -1,5 +1,14 @@
 import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { View } from "react-native";
 
 export default function RootLayout() {
-  return <Stack screenOptions={{ headerShown: false }} />; //removes the header from the app
+  return (
+    <>
+      <View style={{ flex: 1, backgroundColor: "#1e1e1e" }}>
+        <StatusBar style="auto" backgroundColor="#1e1e1e" /> //comeback to this
+        <Stack screenOptions={{ headerShown: false }} />
+      </View>
+    </>
+  );
 }
