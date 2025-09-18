@@ -15,7 +15,7 @@ export default function LoginScreen() {
     const router = useRouter();
 
     const handleContinue = () => {
-        router.push('/login/cottoncandy')
+        router.push('/login/login')
 
         //if wanna see the chatbot look like
         //router.push('../memory-modal/modal-test')
