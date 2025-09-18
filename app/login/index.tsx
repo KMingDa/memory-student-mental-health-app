@@ -49,8 +49,8 @@ const styles = StyleSheet.create({
     emailButton: {
         position: 'absolute',
         bottom: 140,
-        width: 285,
-        height: 185,
+        width: 320,
+        height: 245,
         alignItems: 'center',
         justifyContent: 'center',
     },
