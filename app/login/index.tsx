@@ -15,7 +15,7 @@ export default function LoginScreen() {
     const router = useRouter();
 
     const handleContinue = () => {
-        router.push('/login/cottoncandy') // or '/cottoncandy' if file is at app/cottoncandy.tsx
+        router.push('/login/cottoncandy')
     }
 
     return (
