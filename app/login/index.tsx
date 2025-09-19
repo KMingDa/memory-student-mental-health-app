@@ -15,7 +15,10 @@ export default function LoginScreen() {
     const router = useRouter();
 
     const handleContinue = () => {
-        router.push('/login/cottoncandy') // or '/cottoncandy' if file is at app/cottoncandy.tsx
+        router.push('/login/login')
+
+        //if wanna see the chatbot look like
+        //router.push('../memory-modal/modal-test')
     }
 
     return (
@@ -49,8 +52,8 @@ const styles = StyleSheet.create({
     emailButton: {
         position: 'absolute',
         bottom: 140,
-        width: 285,
-        height: 185,
+        width: 320,
+        height: 245,
         alignItems: 'center',
         justifyContent: 'center',
     },
