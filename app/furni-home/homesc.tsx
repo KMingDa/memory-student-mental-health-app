@@ -1,14 +1,15 @@
-import { Ionicons } from "@expo/vector-icons";
+import { useFonts } from "expo-font";
+import { useRouter } from "expo-router"; // navigation
 import React, { useState } from "react";
 import {
-    Animated,
-    Dimensions,
-    Image,
-    ImageBackground,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Dimensions,
+  Image,
+  ImageBackground,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 // Main assets
@@ -18,7 +19,15 @@ const assets = {
   background: require("@/assets/images/homebg.png"),
   currency1: require("../../assets/images/currency1.png"),
   currency2: require("../../assets/images/currency2.png"),
-  edit: require("../../assets/images/edit.png"), // <-- Added EDIT logo
+  edit: require("../../assets/images/edit.png"),
+
+  // Custom sidebar icons
+  leaderboard: require("../../assets/images/leaderboard.png"),
+  selfcare: require("../../assets/images/selfcare.png"),
+  palette: require("../../assets/images/palette.png"),
+  moodjournal: require("../../assets/images/moodjournal.png"),
+  dailynews: require("../../assets/images/dailynews.png"),
+  extra: require("../../assets/images/currency1.png"), // placeholder for 6th icon
 };
 
 const { width } = Dimensions.get("window");
@@ -27,22 +36,29 @@ export default function HomeScreen() {
   const [greeting, setGreeting] = useState("Good evening! How is your day?");
   const [showGreeting, setShowGreeting] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const router = useRouter();
 
-  // Animation for sidebar width (not strictly required for floating nav)
+  const [fontsLoaded] = useFonts({
+    Jersey15: require("@/assets/fonts/Jersey15-Regular.ttf"),
+  });
+
   const sidebarWidth = React.useRef(new Animated.Value(56)).current;
 
   const toggleSidebar = () => {
     Animated.timing(sidebarWidth, {
-      toValue: sidebarOpen ? 56 : 380, // Wider for horizontal nav
+      toValue: sidebarOpen ? 56 : width - 60,
       duration: 250,
       useNativeDriver: false,
     }).start();
     setSidebarOpen(!sidebarOpen);
   };
 
+  if (!fontsLoaded) {
+    return <View style={{ flex: 1, backgroundColor: "#000" }} />;
+  }
+
   return (
     <ImageBackground source={assets.background} style={styles.background}>
-
       {/* Top Bar */}
       <View style={styles.topBar}>
         <Image source={assets.misahead} style={styles.topAvatar} />
@@ -67,20 +83,21 @@ export default function HomeScreen() {
         <View style={styles.greetingBoxWrapper}>
           <View style={styles.greetingBox}>
             <Text style={styles.greetingText}>{greeting}</Text>
-            {/* Move close X absolutely to top-right corner */}
             <TouchableOpacity
               onPress={() => setShowGreeting(false)}
               style={styles.closeButton}
             >
-              <Ionicons name="close" size={18} color="#444" />
+              <Text style={{ fontSize: 18, color: "#444" }}>×</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
 
-      {/* Floating Nav Button - Always Visible */}
+      {/* Floating Nav Button */}
       <TouchableOpacity style={styles.fabNav} onPress={toggleSidebar}>
-        <Ionicons name={sidebarOpen ? "chevron-back" : "menu"} size={28} color="#A77C54" />
+        <Text style={{ fontSize: 22, color: "#A77C54" }}>
+          {sidebarOpen ? "<" : "≡"}
+        </Text>
       </TouchableOpacity>
 
       {/* Avatar at Bottom Center */}
@@ -88,36 +105,50 @@ export default function HomeScreen() {
         <Image source={assets.avatar} style={styles.avatar} />
       </View>
 
-      {/* Optionally, expanded sidebar icons (horizontal now) */}
+      {/* Sidebar */}
       {sidebarOpen && (
         <Animated.View style={[styles.sidebar, { width: sidebarWidth }]}>
           <View style={styles.navRow}>
             <TouchableOpacity style={styles.navButton}>
-              <Ionicons name="book" size={28} color="#8C6444" />
-              <Text style={styles.navLabel}>mood{"\n"}journal</Text>
+              <Image source={assets.moodjournal} style={styles.customIcon} />
+              <Text style={styles.navLabel}>mood journal</Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.navButton}>
-              <Ionicons name="flame" size={28} color="#C15C2B" />
-              <Text style={styles.navLabel}>self-care{"\n"}journey</Text>
+              <Image source={assets.selfcare} style={styles.customIcon} />
+              <Text style={styles.navLabel}>self-care journey</Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.navButton}>
-              <Ionicons name="color-palette" size={28} color="#489FC9" />
-              <Text style={styles.navLabel}>“manor{"\n"}palette”</Text>
+              <Image source={assets.palette} style={styles.customIcon} />
+              <Text style={styles.navLabel}>manor palette</Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.navButton}>
-              <Ionicons name="newspaper" size={28} color="#8C6444" />
-              <Text style={styles.navLabel}>daily{"\n"}news</Text>
+              <Image source={assets.dailynews} style={styles.customIcon} />
+              <Text style={styles.navLabel}>daily news</Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.navButton}>
-              <Ionicons name="trophy" size={28} color="#E8B13C" />
-              <Text style={styles.navLabel}>leader{"\n"}board</Text>
+              <Image source={assets.leaderboard} style={styles.customIcon} />
+              <Text style={styles.navLabel}>leader board</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.navButton}>
+              <Image source={assets.extra} style={styles.customIcon} />
+              <Text style={styles.navLabel}>luca's tracker</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>
       )}
 
-      {/* Edit Logo at Bottom Right */}
-      <Image source={assets.edit} style={styles.editLogo} />
+      {/* Edit Button */}
+      <TouchableOpacity
+        onPress={() => router.push("/furni-home/homesc2")}
+        style={styles.editButton}
+      > 
+        <Image source={assets.edit} style={styles.editLogo} />
+      </TouchableOpacity>
     </ImageBackground>
   );
 }
@@ -137,17 +168,14 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(40, 30, 50, 0.55)",
-    borderRadius: 0,
-    marginHorizontal: 0,
-    paddingVertical: 10,
+    backgroundColor: "rgba(254, 181, 192, 0.50)",
+    paddingVertical: 3,
     paddingHorizontal: 14,
     zIndex: 10,
   },
   topAvatar: {
-    width: 54,
-    height: 54,
-    borderRadius: 0,
+    width: 60,
+    height: 60,
     marginRight: 14,
     borderWidth: 2,
     borderColor: "#FEB5C0",
@@ -159,14 +187,14 @@ const styles = StyleSheet.create({
   },
   topName: {
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: 19,
+    fontSize: 30,
     marginBottom: 2,
+    fontFamily: "Jersey15",
   },
   topRole: {
     color: "#fff",
-    fontSize: 13,
-    opacity: 0.79,
+    fontSize: 25,
+    fontFamily: "Jersey15",
   },
   topStats: {
     flexDirection: "column",
@@ -180,15 +208,15 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   currencyIcon: {
-    width: 22,
-    height: 22,
+    width: 25,
+    height: 25,
     marginRight: 5,
     resizeMode: "contain",
   },
   stat: {
     color: "#fff",
-    fontWeight: "bold",
-    fontSize: 17,
+    fontSize: 25,
+    fontFamily: "Jersey15",
   },
   greetingBoxWrapper: {
     position: "absolute",
@@ -202,8 +230,10 @@ const styles = StyleSheet.create({
   greetingBox: {
     flex: 1,
     marginHorizontal: 18,
-    backgroundColor: "#FEB5C0",
-    borderRadius: 25,
+    backgroundColor: "rgba(254, 181, 192, 0.78)",
+    borderColor: "#FFFFFF",
+    borderWidth: 1,
+    borderRadius: 10,
     paddingVertical: 15,
     paddingHorizontal: 24,
     alignItems: "center",
@@ -213,15 +243,14 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 8,
     elevation: 2,
-    position: "relative", // <--- Needed for absolute position of closeButton
   },
   greetingText: {
     fontWeight: "bold",
     color: "#333",
-    fontSize: 18,
+    fontSize: 23,
     flex: 1,
     textAlign: "center",
-    letterSpacing: 0.1,
+    fontFamily: "Jersey15",
   },
   closeButton: {
     position: "absolute",
@@ -230,14 +259,8 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: "rgba(255, 255, 255, 0)",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
-    shadowOpacity: 0.06,
-    shadowRadius: 2,
-    elevation: 1,
-    padding: 0,
   },
   fabNav: {
     position: "absolute",
@@ -245,72 +268,57 @@ const styles = StyleSheet.create({
     top: 210,
     width: 40,
     height: 72,
-    backgroundColor: "#FCE3CA", // soft pastel as in image
+    backgroundColor: "#FCE3CA",
     alignItems: "center",
     justifyContent: "center",
     zIndex: 15,
     borderTopRightRadius: 10,
     borderBottomRightRadius: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-    elevation: 2,
     borderWidth: 1,
     borderColor: "#EDD3B8",
-    padding: 0,
   },
   sidebar: {
     position: "absolute",
-    left: 36, // just after the fabNav
+    left: 36,
     top: 210,
-    width: 380, // room for 5 icons with gaps
-    height: 96,
+    height: 72,
     backgroundColor: "#FFE9D1",
     borderTopRightRadius: 16,
     borderBottomRightRadius: 16,
-    borderTopLeftRadius: 0,
-    borderBottomLeftRadius: 0,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 28,
+    paddingHorizontal: 8,
     zIndex: 19,
     borderWidth: 1,
     borderColor: "#EDD3B8",
-    shadowColor: "#000",
-    shadowOpacity: 0.07,
-    shadowRadius: 4,
-    elevation: 2,
   },
   navRow: {
     flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "center",
+    alignItems: "center",
+    justifyContent: "space-between",
     width: "100%",
-    height: "100%",
-    gap: 18,
   },
   navButton: {
+    flex: 1,
     backgroundColor: "#FFEDD8",
-    borderRadius: 10,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 6,
-    paddingHorizontal: 10,
-    minWidth: 60,
-    minHeight: 72,
-    marginHorizontal: 2,
-    elevation: 1,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
+    marginHorizontal: 3,
   },
   navLabel: {
-    fontSize: 11,
+    fontSize: 10,
     color: "#8C6444",
     textAlign: "center",
-    marginTop: 3,
-    lineHeight: 13,
+    marginTop: 2,
+    lineHeight: 12,
     fontWeight: "600",
+  },
+  customIcon: {
+    width: 24,
+    height: 24,
+    resizeMode: "contain",
   },
   avatarContainer: {
     position: "absolute",
@@ -325,13 +333,15 @@ const styles = StyleSheet.create({
     height: 220,
     resizeMode: "contain",
   },
-  editLogo: {
+  editButton: {
     position: "absolute",
     right: 22,
     bottom: 22,
+    zIndex: 30,
+  },
+  editLogo: {
     width: 48,
     height: 48,
     resizeMode: "contain",
-    zIndex: 30,
   },
 });
