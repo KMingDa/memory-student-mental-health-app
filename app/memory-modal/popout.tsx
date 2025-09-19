@@ -1,38 +1,54 @@
 import * as Font from "expo-font";
 import { useEffect, useRef, useState } from "react";
 import {
-    Image,
-    Modal,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    View,
+  Image,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
 } from "react-native";
 
-interface Message {
-  id: string;
-  text: string;
-  sender: "me" | "Memory";
-}
-
-interface PixelDialogProps {
-  visible: boolean;
-  onClose: () => void;
-  messages: Message[];
-  onSendMessage?: (text: string) => void;
-}
+import { generateAPIUrl } from "@/utils/utils";
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport } from "ai";
+import { fetch as expoFetch } from "expo/fetch";
 
 export default function PixelDialog({
   visible,
   onClose,
-  messages,
-  onSendMessage,
-}: PixelDialogProps) {
+}: {
+  visible: boolean;
+  onClose: () => void;
+}) {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [inputText, setInputText] = useState("");
   const scrollRef = useRef<ScrollView>(null);
+
+  // ✅ Setup LLM hook
+  const { messages, sendMessage, error } = useChat({
+    transport: new DefaultChatTransport({
+      fetch: expoFetch as unknown as typeof globalThis.fetch,
+      api: generateAPIUrl("../api/chat"),
+    }),
+    onError: (err) => console.error(err, "ERROR"),
+  });
+
+  // ✅ Convert LLM messages into safe strings for UI
+  const formattedMessages = messages.map((m) => ({
+    id: m.id,
+    text: String(
+      m.parts
+        .map((p) => (p.type === "text" ? p.text : ""))
+        .filter(Boolean)
+        .join("")
+    ),
+    sender: m.role === "user" ? "me" : "Memory",
+  }));
 
   useEffect(() => {
     async function loadFont() {
@@ -48,91 +64,99 @@ export default function PixelDialog({
     if (scrollRef.current) {
       scrollRef.current.scrollToEnd({ animated: true });
     }
-  }, [messages]);
+  }, [formattedMessages]);
 
   const handleSend = () => {
     if (inputText.trim() === "") return;
-    if (onSendMessage) onSendMessage(inputText.trim());
+    sendMessage({ text: inputText.trim() });
     setInputText("");
   };
 
   if (!fontsLoaded) return null;
+  if (error) return <Text style={{ color: "red" }}>{String(error.message)}</Text>;
 
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
-        <View style={styles.dialogBox}>
-          {/* Top Bar */}
-          <View style={styles.topBar}>
-            <View style={styles.nameSection}>
-              <View style={styles.onlineDot} />
-              <Text style={styles.nameText}>'Memory' is online!</Text>
+        <KeyboardAvoidingView
+          style={styles.keyboardAvoid}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+        >
+          <View style={styles.dialogBox}>
+            {/* Top Bar */}
+            <View style={styles.topBar}>
+              <View style={styles.nameSection}>
+                <View style={styles.onlineDot} />
+                <Text style={styles.nameText}>'Memory' is online!</Text>
+              </View>
+              <Pressable onPress={onClose}>
+                <Text style={styles.closeText}>✕</Text>
+              </Pressable>
             </View>
-            <Pressable onPress={onClose}>
-              <Text style={styles.closeText}>✕</Text>
-            </Pressable>
-          </View>
-          <View style={styles.divider} />
+            <View style={styles.divider} />
 
-          {/* Chat Area */}
-          <ScrollView style={styles.chatArea} ref={scrollRef}>
-            {messages.map((msg, index) => {
-              const showAvatar =
-                msg.sender === "Memory" &&
-                (index === 0 || messages[index - 1].sender !== "Memory");
+            {/* Chat Area */}
+            <ScrollView style={styles.chatArea} ref={scrollRef}>
+              {formattedMessages.map((msg, index) => {
+                const showAvatar =
+                  msg.sender === "Memory" &&
+                  (index === 0 || formattedMessages[index - 1].sender !== "Memory");
 
-              return (
-                <View
-                  key={msg.id}
-                  style={[
-                    styles.messageRow,
-                    msg.sender === "me" ? styles.myRow : styles.llmRow,
-                  ]}
-                >
-                  {showAvatar && (
-                    <Image
-                      source={require("../../assets/images/alice.png")}
-                      style={styles.avatar}
-                    />
-                  )}
-
+                return (
                   <View
+                    key={msg.id}
                     style={[
-                      styles.bubble,
-                      msg.sender === "me" ? styles.myBubble : styles.llmBubble,
+                      styles.messageRow,
+                      msg.sender === "me" ? styles.myRow : styles.llmRow,
                     ]}
                   >
-                    <Text style={styles.text}>{msg.text}</Text>
+                    {showAvatar && (
+                      <Image
+                        source={require("../../assets/images/alice.png")}
+                        style={styles.avatar}
+                      />
+                    )}
+
+                    <View
+                      style={[
+                        styles.bubble,
+                        msg.sender === "me" ? styles.myBubble : styles.llmBubble,
+                      ]}
+                    >
+                      <Text style={styles.text}>{msg.text}</Text>
+                    </View>
+
+                    {msg.sender === "me" && (
+                      <Image
+                        source={require("../../assets/images/expavatar.png")}
+                        style={styles.avatar}
+                      />
+                    )}
                   </View>
+                );
+              })}
+            </ScrollView>
 
-                  {msg.sender === "me" && (
-                    <Image
-                      source={require("../../assets/images/expavatar.png")}
-                      style={styles.avatar}
-                    />
-                  )}
-                </View>
-              );
-            })}
-          </ScrollView>
-
-          {/* Input Bar */}
-          <View style={styles.inputBar}>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Type a message..."
-              placeholderTextColor="#555"
-              value={inputText}
-              onChangeText={setInputText}
-            />
-            <Pressable style={styles.sendButton} onPress={handleSend}>
-              <Image
-                source={require("../../assets/images/send.png")}
-                style={styles.sendIcon}
+            {/* Input Bar */}
+            <View style={styles.inputBar}>
+              <TextInput
+                style={styles.textInput}
+                placeholder="Type a message..."
+                placeholderTextColor="#555"
+                value={inputText}
+                onChangeText={setInputText}
+                onSubmitEditing={handleSend}
               />
-            </Pressable>
+              <Pressable style={styles.sendButton} onPress={handleSend}>
+                <Image
+                  source={require("../../assets/images/send.png")}
+                  style={styles.sendIcon}
+                />
+              </Pressable>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
@@ -142,6 +166,12 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  keyboardAvoid: {
+    flex: 1,
+    width: "100%",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -159,7 +189,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: "#F7B7B7",
+    backgroundColor: "#F7B8B8",
   },
   nameSection: { flexDirection: "row", alignItems: "center" },
   onlineDot: {
@@ -188,7 +218,7 @@ const styles = StyleSheet.create({
   llmRow: { justifyContent: "flex-start" },
   bubble: { padding: 10, borderRadius: 6, maxWidth: "70%" },
   myBubble: { backgroundColor: "#F4FECD" },
-  llmBubble: { backgroundColor: "#fff" },
+  llmBubble: { backgroundColor: "#f0f0f0" },
   text: { fontSize: 14, fontFamily: "SpaceMono", color: "#000" },
   avatar: { width: 35, height: 35, borderRadius: 4, marginHorizontal: 6 },
   inputBar: {
@@ -196,15 +226,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 6,
     paddingVertical: 6,
-    backgroundColor: "#FAD3D3",
+    backgroundColor: "#FBDDDD",
     position: "relative",
   },
   textInput: {
     flex: 1,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: "#F4FECD",
-    borderRadius: 12,
+    backgroundColor: "#FCE8E8",
+    borderRadius: 10,
     fontSize: 14,
     fontFamily: "SpaceMono",
     fontWeight: "bold",
