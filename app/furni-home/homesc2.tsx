@@ -14,10 +14,10 @@ import {
 
 const furniAssets = {
   sofa: [
-    { color: "#E78F64", asset: require("@/assets/furnitures/sofa/sofa_recolours.png") }, // forced asset
+    { color: "#E78F64", asset: require("@/assets/furnitures/window/sofa_brownbear.png") }, // forced asset
   ],
   pillow: [
-    { color: "#F5E6CC", asset: require("@/assets/furnitures/pillow/pillow_base.png") }, // forced asset
+    { color: "#F5E6CC", asset: require("@/assets/furnitures/window/pillow_base.png") }, // forced asset
   ],
   curtain: [
     { color: "#FFF1D6", asset: require("@/assets/furnitures/window/curtain_white.png") },
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
     left: 50,         // adjustable
     width: 500,       // forced large size
     height: 300,      // forced large size
-    zIndex: 999,      // always on top
+    zIndex: 3,      // always on top
   },
   pillowLayer: {
     position: "absolute",
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
     left: 200,        // adjustable
     width: 200,
     height: 150,
-    zIndex: 1000,
+    zIndex: 5,
   },
   editIconBtn: { position: "absolute", right: 20, bottom: 20, zIndex: 30 },
   editIcon: { width: 46, height: 46, resizeMode: "contain" },
