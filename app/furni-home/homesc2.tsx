@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts } from "expo-font";
+import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -16,12 +17,12 @@ import {
 
 const furniAssets = {
   sofa: [
-    { color: "#ff6664", asset: require("@/assets/furnitures/window/sofa_peach.png") },
-    { color: "#e39271", asset: require("@/assets/furnitures/window/sofa_grey.png") },
+    { color: "#f8a8a7ff", asset: require("@/assets/furnitures/window/sofa_peach.png") },
+    { color: "#de9c82ff", asset: require("@/assets/furnitures/window/sofa_grey.png") },
     { color: "#ffa5af", asset: require("@/assets/furnitures/window/sofa_pastellavender.png") },
     { color: "#ff836f", asset: require("@/assets/furnitures/window/sofa_pastelpink.png") },
-    { color: "#afc154", asset: require("@/assets/furnitures/window/sofa_green.png") },
-    { color: "#ff824d", asset: require("@/assets/furnitures/window/sofa_brownbear.png") },
+    { color: "#c3d279ff", asset: require("@/assets/furnitures/window/sofa_green.png") },
+    { color: "#743e27ff", asset: require("@/assets/furnitures/window/sofa_brownbear.png") },
     { reset: true },
   ],
   curtain: [
@@ -41,11 +42,17 @@ const furniAssets = {
 const bgAsset = require("@/assets/images/homebg.png");
 const editIcon = require("@/assets/images/edit.png");
 
+const toolbarIcons = {
+  sofa: require("@/assets/images/sofa icon.png"),
+  curtain: require("@/assets/images/window icon.png"),
+};
+
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const CANVAS_WIDTH = SCREEN_WIDTH;
 const CANVAS_HEIGHT = Math.round(CANVAS_WIDTH * 1.7);
 
 export default function RoomEditor() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [selectedCurtain, setSelectedCurtain] = useState<number>(-1);
   const [selectedSofa, setSelectedSofa] = useState<number>(-1);
@@ -53,12 +60,10 @@ export default function RoomEditor() {
   const [selectedFurniture, setSelectedFurniture] = useState<"sofa" | "curtain">("sofa");
 
   const [fontsLoaded] = useFonts({
-  Jersey15: require('@/assets/fonts/Jersey15-Regular.ttf'),
-});
+    Jersey15: require("@/assets/fonts/Jersey15-Regular.ttf"),
+  });
 
-if (!fontsLoaded) {
-  return null; // or a loading indicator if you want
-}
+  if (!fontsLoaded) return null;
 
   useEffect(() => {
     const loadLayout = async () => {
@@ -67,12 +72,16 @@ if (!fontsLoaded) {
         if (saved) {
           const parsed = JSON.parse(saved);
           setSelectedCurtain(
-            typeof parsed?.curtain === "number" && parsed.curtain >= 0 && parsed.curtain < furniAssets.curtain.length
+            typeof parsed?.curtain === "number" &&
+              parsed.curtain >= 0 &&
+              parsed.curtain < furniAssets.curtain.length
               ? parsed.curtain
               : -1
           );
           setSelectedSofa(
-            typeof parsed?.sofa === "number" && parsed.sofa >= 0 && parsed.sofa < furniAssets.sofa.length
+            typeof parsed?.sofa === "number" &&
+              parsed.sofa >= 0 &&
+              parsed.sofa < furniAssets.sofa.length
               ? parsed.sofa
               : -1
           );
@@ -89,9 +98,18 @@ if (!fontsLoaded) {
   }, []);
 
   const saveLayout = async () => {
-    await AsyncStorage.setItem("roomLayout", JSON.stringify({ curtain: selectedCurtain, sofa: selectedSofa }));
-    setEditMode(false);
-    Alert.alert("Saved!", "Your layout has been updated.");
+    try {
+      await AsyncStorage.setItem(
+        "roomLayout",
+        JSON.stringify({ curtain: selectedCurtain, sofa: selectedSofa })
+      );
+
+      setEditMode(false);
+      // Navigate back to homesc.tsx so updated furniture loads
+      router.back();
+    } catch (err) {
+      console.warn("Failed to save layout:", err);
+    }
   };
 
   const handleFurnitureClick = (type: "sofa" | "curtain") => {
@@ -100,14 +118,13 @@ if (!fontsLoaded) {
     if (type === "curtain") Alert.alert("🪟 Curtain", "What a nice view!");
   };
 
-  if (loading) {
+  if (loading)
     return (
       <View style={styles.splash}>
         <ActivityIndicator size="large" color="#D43C67" />
         <Text style={styles.splashText}>Loading room...</Text>
       </View>
     );
-  }
 
   return (
     <View style={styles.root}>
@@ -143,14 +160,12 @@ if (!fontsLoaded) {
           )}
         </View>
 
-      {/* Bottom cover box */}
-      {!editMode && (
-        <View style={styles.bottomCover}>
-          <Text style={[styles.bottomCoverText, { fontFamily: 'Jersey15' }]}>
-            Let's edit your room!
-          </Text>
-        </View>
-      )}
+        {/* Bottom cover box */}
+        {!editMode && (
+          <View style={styles.bottomCover}>
+            <Text style={[styles.bottomCoverText, { fontFamily: "Jersey15" }]}>Let's edit your room!</Text>
+          </View>
+        )}
 
         {/* Edit button */}
         <TouchableOpacity style={styles.editIconBtn} onPress={() => setEditMode(true)}>
@@ -162,11 +177,14 @@ if (!fontsLoaded) {
       {editMode && (
         <View style={styles.toolbar}>
           <View style={styles.iconRow}>
-            <TouchableOpacity onPress={() => setSelectedFurniture("sofa")}>
-              <Text style={[styles.iconLabel, selectedFurniture === "sofa" && styles.activeIcon]}>Sofa</Text>
+            <TouchableOpacity onPress={() => setSelectedFurniture("sofa")} style={styles.iconWrapper}>
+              <Image source={toolbarIcons.sofa} style={styles.toolbarIcon} />
+              {selectedFurniture === "sofa" && <View style={styles.activeUnderline} />}
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => setSelectedFurniture("curtain")}>
-              <Text style={[styles.iconLabel, selectedFurniture === "curtain" && styles.activeIcon]}>Curtain</Text>
+
+            <TouchableOpacity onPress={() => setSelectedFurniture("curtain")} style={styles.iconWrapper}>
+              <Image source={toolbarIcons.curtain} style={styles.toolbarIcon} />
+              {selectedFurniture === "curtain" && <View style={styles.activeUnderline} />}
             </TouchableOpacity>
           </View>
 
@@ -174,9 +192,10 @@ if (!fontsLoaded) {
           {selectedFurniture === "sofa" && (
             <FlatList
               data={furniAssets.sofa}
+              horizontal
+              showsHorizontalScrollIndicator={false}
               keyExtractor={(_, idx) => `sofa-${idx}`}
-              numColumns={5}
-              contentContainerStyle={styles.swatchGrid}
+              contentContainerStyle={styles.swatchGridHorizontal}
               renderItem={({ item, index }) => (
                 <TouchableOpacity
                   style={[
@@ -198,9 +217,10 @@ if (!fontsLoaded) {
           {selectedFurniture === "curtain" && (
             <FlatList
               data={furniAssets.curtain}
+              horizontal
+              showsHorizontalScrollIndicator={false}
               keyExtractor={(_, idx) => `curtain-${idx}`}
-              numColumns={5}
-              contentContainerStyle={styles.swatchGrid}
+              contentContainerStyle={styles.swatchGridHorizontal}
               renderItem={({ item, index }) => (
                 <TouchableOpacity
                   style={[
@@ -243,76 +263,28 @@ const styles = StyleSheet.create({
   curtainOverlay: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 3 },
   curtainOverlayTouch: { ...StyleSheet.absoluteFillObject, zIndex: 4 },
 
-  sofaWrapper: {
-    position: "absolute",
-    bottom: CANVAS_HEIGHT * 0.11,
-    left: CANVAS_WIDTH * 0.25,
-    width: CANVAS_WIDTH * 1.01,
-    height: CANVAS_HEIGHT * 1.01,
-    zIndex: 9,
-  },
-  sofaImage: {
-    width: "100%",
-    height: "100%",
-  },
+  sofaWrapper: { position: "absolute", bottom: CANVAS_HEIGHT * 0.11, left: CANVAS_WIDTH * 0.25, width: CANVAS_WIDTH * 1.01, height: CANVAS_HEIGHT * 1.01, zIndex: 9 },
+  sofaImage: { width: "100%", height: "100%" },
 
   editIconBtn: { position: "absolute", right: 20, bottom: 42, zIndex: 30 },
   editIcon: { width: 46, height: 46, resizeMode: "contain" },
 
-  bottomCover: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: CANVAS_HEIGHT * 0.19, // adjust to fully cover the white part
-    backgroundColor: "#ffdbe6",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 25,
-  },
-  bottomCoverText: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#D43C67",
-  },
+  bottomCover: { position: "absolute", bottom: 0, left: 0, right: 0, height: CANVAS_HEIGHT * 0.19, backgroundColor: "#ffdbe6", alignItems: "center", justifyContent: "center", zIndex: 25 },
+  bottomCoverText: { fontSize: 32, fontWeight: "bold", color: "#D43C67" },
 
-  toolbar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#ffdbe6",
-    borderTopLeftRadius: 0,
-    borderTopRightRadius: 0,
-    paddingTop: 15,
-    paddingBottom: 30,
-    zIndex: 30,
-  },
+  toolbar: { position: "absolute", bottom: 0, left: 0, right: 0, backgroundColor: "#ffdbe6", paddingTop: 15, paddingBottom: 30, zIndex: 30 },
 
   iconRow: { flexDirection: "row", justifyContent: "space-evenly", marginBottom: 5 },
-  iconLabel: { fontSize: 16, fontWeight: "bold", color: "#8C6444" },
-  activeIcon: { color: "#D43C67", textDecorationLine: "underline" },
+  iconWrapper: { alignItems: "center" },
+  toolbarIcon: { width: 80, height: 80, resizeMode: "contain" },
+  activeUnderline: { height: 2, backgroundColor: "red", width: 60, marginTop: 4, borderRadius: 1 },
 
-  swatchGrid: { justifyContent: "center", paddingVertical: 10, gap: 8 },
-  swatch: {
-    width: 48,
-    height: 48,
-    borderRadius: 10,
-    margin: 6,
-    borderWidth: 2,
-    borderColor: "#fff",
-  },
+  swatchGridHorizontal: { paddingVertical: 10, paddingHorizontal: 6, alignItems: "center" },
+  swatch: { width: 48, height: 48, borderRadius: 10, marginHorizontal: 6, borderWidth: 1, borderColor: "#fff" },
   activeSwatch: { borderColor: "#D43C67", borderWidth: 3 },
   resetText: { fontSize: 18, fontWeight: "bold", color: "#D43C67" },
 
-  saveBtn: {
-    alignSelf: "center",
-    marginTop: 10,
-    backgroundColor: "#D43C67",
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
+  saveBtn: { alignSelf: "center", marginTop: 10, backgroundColor: "#D43C67", paddingHorizontal: 30, paddingVertical: 10, borderRadius: 12 },
   saveBtnText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 
   splash: { flex: 1, backgroundColor: "#fff", justifyContent: "center", alignItems: "center" },

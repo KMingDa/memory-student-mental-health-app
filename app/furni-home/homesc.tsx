@@ -1,6 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts } from "expo-font";
-import { useRouter } from "expo-router"; // navigation
-import React, { useState } from "react";
+import { useFocusEffect, useRouter } from "expo-router";
+import React, { useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -21,13 +22,12 @@ const assets = {
   currency2: require("../../assets/images/currency2.png"),
   edit: require("../../assets/images/edit.png"),
 
-  // Custom sidebar icons
   leaderboard: require("../../assets/images/leaderboard.png"),
   selfcare: require("../../assets/images/selfcare.png"),
   palette: require("../../assets/images/palette.png"),
   moodjournal: require("../../assets/images/moodjournal.png"),
   dailynews: require("../../assets/images/dailynews.png"),
-  extra: require("../../assets/images/currency1.png"), // placeholder for 6th icon
+  extra: require("../../assets/images/currency1.png"), // placeholder
 };
 
 const { width } = Dimensions.get("window");
@@ -36,8 +36,13 @@ export default function HomeScreen() {
   const [greeting, setGreeting] = useState("Good evening! How is your day?");
   const [showGreeting, setShowGreeting] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const router = useRouter();
+  const [selectedCurtain, setSelectedCurtain] = useState<number>(-1);
+  const [selectedSofa, setSelectedSofa] = useState<number>(-1);
 
+  const [showAvatarBubble, setShowAvatarBubble] = useState(false);
+  const bubbleTimeoutRef = useRef<number | null>(null);
+
+  const router = useRouter();
   const [fontsLoaded] = useFonts({
     Jersey15: require("@/assets/fonts/Jersey15-Regular.ttf"),
   });
@@ -51,6 +56,51 @@ export default function HomeScreen() {
       useNativeDriver: false,
     }).start();
     setSidebarOpen(!sidebarOpen);
+  };
+
+  const handleAvatarClick = () => {
+    setShowAvatarBubble(true);
+    if (bubbleTimeoutRef.current) clearTimeout(bubbleTimeoutRef.current);
+    bubbleTimeoutRef.current = setTimeout(() => {
+      setShowAvatarBubble(false);
+      bubbleTimeoutRef.current = null;
+    }, 4000) as unknown as number;
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const loadLayout = async () => {
+        try {
+          const saved = await AsyncStorage.getItem("roomLayout");
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            setSelectedCurtain(parsed?.curtain ?? -1);
+            setSelectedSofa(parsed?.sofa ?? -1);
+          }
+        } catch (err) {
+          console.warn("Failed to load room layout:", err);
+        }
+      };
+      loadLayout();
+    }, [])
+  );
+
+  const furniAssets = {
+    sofa: [
+      require("@/assets/furnitures/window/sofa_peach.png"),
+      require("@/assets/furnitures/window/sofa_grey.png"),
+      require("@/assets/furnitures/window/sofa_pastellavender.png"),
+      require("@/assets/furnitures/window/sofa_pastelpink.png"),
+      require("@/assets/furnitures/window/sofa_green.png"),
+      require("@/assets/furnitures/window/sofa_brownbear.png"),
+    ],
+    curtain: [
+      require("@/assets/furnitures/window/curtain_white.png"),
+      require("@/assets/furnitures/window/curtain_yellow_pattern.png"),
+      require("@/assets/furnitures/window/curtain_pink_stripes.png"),
+      require("@/assets/furnitures/window/curtain_blue.png"),
+      require("@/assets/furnitures/window/curtain_brown.png"),
+    ],
   };
 
   if (!fontsLoaded) {
@@ -78,20 +128,90 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Greeting Box */}
+      {/* Greeting Bar below TopBar with close button */}
       {showGreeting && (
-        <View style={styles.greetingBoxWrapper}>
-          <View style={styles.greetingBox}>
-            <Text style={styles.greetingText}>{greeting}</Text>
-            <TouchableOpacity
-              onPress={() => setShowGreeting(false)}
-              style={styles.closeButton}
-            >
-              <Text style={{ fontSize: 18, color: "#444" }}>×</Text>
-            </TouchableOpacity>
-          </View>
+        <View style={styles.greetingWrapper}>
+          <Text style={styles.greetingText}>{greeting}</Text>
+          <TouchableOpacity onPress={() => setShowGreeting(false)}>
+            <Text style={styles.closeButton}>×</Text>
+          </TouchableOpacity>
         </View>
       )}
+
+      {/* Curtain Layer */}
+      {selectedCurtain >= 0 ? (
+        <Image
+          source={furniAssets.curtain[selectedCurtain]}
+          style={{
+            position: "absolute",
+            top: 11,
+            left: -126,
+            width: 900,
+            height: 900,
+            zIndex: 2,
+            resizeMode: "contain",
+          }}
+        />
+      ) : (
+        <Image
+          source={require("@/assets/furnitures/window/curtains_base.png")}
+          style={{
+            position: "absolute",
+            top: 11,
+            left: -126,
+            width: 900,
+            height: 900,
+            zIndex: 1,
+            resizeMode: "contain",
+          }}
+        />
+      )}
+
+      {/* Sofa Layer with clickable touch */}
+      {selectedSofa >= 0 ? (
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => setGreeting("How about taking a rest today?")}
+          style={{
+            position: "absolute",
+            top: 30,
+            left: -78,
+            width: 830,
+            height: 830,
+            zIndex: 3,
+          }}
+        >
+          <Image
+            source={furniAssets.sofa[selectedSofa]}
+            style={{ width: "100%", height: "100%", resizeMode: "contain" }}
+          />
+        </TouchableOpacity>
+      ) : (
+        <Image
+          source={require("@/assets/furnitures/window/sofa_recolours.png")}
+          style={{
+            position: "absolute",
+            top: 30,
+            left: -78,
+            width: 830,
+            height: 830,
+            zIndex: 1,
+            resizeMode: "contain",
+          }}
+        />
+      )}
+
+      {/* Avatar */}
+      <View style={styles.avatarContainer}>
+        <TouchableOpacity onPress={handleAvatarClick}>
+          <Image source={assets.avatar} style={styles.avatar} />
+        </TouchableOpacity>
+        {showAvatarBubble && (
+          <View style={styles.bubble}>
+            <Text style={styles.bubbleText}>Where do I start?</Text>
+          </View>
+        )}
+      </View>
 
       {/* Floating Nav Button */}
       <TouchableOpacity style={styles.fabNav} onPress={toggleSidebar}>
@@ -99,11 +219,6 @@ export default function HomeScreen() {
           {sidebarOpen ? "<" : "≡"}
         </Text>
       </TouchableOpacity>
-
-      {/* Avatar at Bottom Center */}
-      <View style={styles.avatarContainer}>
-        <Image source={assets.avatar} style={styles.avatar} />
-      </View>
 
       {/* Sidebar */}
       {sidebarOpen && (
@@ -113,27 +228,22 @@ export default function HomeScreen() {
               <Image source={assets.moodjournal} style={styles.customIcon} />
               <Text style={styles.navLabel}>mood journal</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={styles.navButton}>
               <Image source={assets.selfcare} style={styles.customIcon} />
               <Text style={styles.navLabel}>self-care journey</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={styles.navButton}>
               <Image source={assets.palette} style={styles.customIcon} />
               <Text style={styles.navLabel}>manor palette</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={styles.navButton}>
               <Image source={assets.dailynews} style={styles.customIcon} />
               <Text style={styles.navLabel}>daily news</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={styles.navButton}>
               <Image source={assets.leaderboard} style={styles.customIcon} />
               <Text style={styles.navLabel}>leader board</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={styles.navButton}>
               <Image source={assets.extra} style={styles.customIcon} />
               <Text style={styles.navLabel}>luca's tracker</Text>
@@ -146,7 +256,7 @@ export default function HomeScreen() {
       <TouchableOpacity
         onPress={() => router.push("/furni-home/homesc2")}
         style={styles.editButton}
-      > 
+      >
         <Image source={assets.edit} style={styles.editLogo} />
       </TouchableOpacity>
     </ImageBackground>
@@ -161,6 +271,22 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
     justifyContent: "flex-end",
   },
+  greetingWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "rgba(255,192,203,0.9)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    position: "absolute",
+    top: 110,
+    left: 10,
+    right: 10,
+    zIndex: 50,
+  },
+  greetingText: { fontWeight: "bold", flex: 1, textAlign: "center" },
+  closeButton: { fontSize: 18, fontWeight: "bold", marginLeft: 10 },
   topBar: {
     position: "absolute",
     top: 36,
@@ -173,175 +299,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     zIndex: 10,
   },
-  topAvatar: {
-    width: 60,
-    height: 60,
-    marginRight: 14,
-    borderWidth: 2,
-    borderColor: "#FEB5C0",
-    backgroundColor: "#FEE3B4",
-  },
-  topInfo: {
-    flex: 1,
-    justifyContent: "center",
-  },
-  topName: {
-    color: "#fff",
-    fontSize: 30,
-    marginBottom: 2,
-    fontFamily: "Jersey15",
-  },
-  topRole: {
-    color: "#fff",
-    fontSize: 25,
-    fontFamily: "Jersey15",
-  },
-  topStats: {
-    flexDirection: "column",
-    alignItems: "flex-end",
-    gap: 6,
-    marginLeft: 10,
-  },
-  currencyRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginVertical: 2,
-  },
-  currencyIcon: {
-    width: 25,
-    height: 25,
-    marginRight: 5,
-    resizeMode: "contain",
-  },
-  stat: {
-    color: "#fff",
-    fontSize: 25,
-    fontFamily: "Jersey15",
-  },
-  greetingBoxWrapper: {
-    position: "absolute",
-    top: 122,
-    left: 0,
-    width: "100%",
-    alignItems: "center",
-    flexDirection: "row",
-    zIndex: 13,
-  },
-  greetingBox: {
-    flex: 1,
-    marginHorizontal: 18,
-    backgroundColor: "rgba(254, 181, 192, 0.78)",
-    borderColor: "#FFFFFF",
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingVertical: 15,
-    paddingHorizontal: 24,
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "center",
-    shadowColor: "#dacbcbff",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  greetingText: {
-    fontWeight: "bold",
-    color: "#333",
-    fontSize: 23,
-    flex: 1,
-    textAlign: "center",
-    fontFamily: "Jersey15",
-  },
-  closeButton: {
-    position: "absolute",
-    top: 7,
-    right: 8,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  fabNav: {
-    position: "absolute",
-    left: 0,
-    top: 210,
-    width: 40,
-    height: 72,
-    backgroundColor: "#FCE3CA",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 15,
-    borderTopRightRadius: 10,
-    borderBottomRightRadius: 10,
-    borderWidth: 1,
-    borderColor: "#EDD3B8",
-  },
-  sidebar: {
-    position: "absolute",
-    left: 36,
-    top: 210,
-    height: 72,
-    backgroundColor: "#FFE9D1",
-    borderTopRightRadius: 16,
-    borderBottomRightRadius: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 8,
-    zIndex: 19,
-    borderWidth: 1,
-    borderColor: "#EDD3B8",
-  },
-  navRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: "100%",
-  },
-  navButton: {
-    flex: 1,
-    backgroundColor: "#FFEDD8",
-    borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 6,
-    marginHorizontal: 3,
-  },
-  navLabel: {
-    fontSize: 10,
-    color: "#8C6444",
-    textAlign: "center",
-    marginTop: 2,
-    lineHeight: 12,
-    fontWeight: "600",
-  },
-  customIcon: {
-    width: 24,
-    height: 24,
-    resizeMode: "contain",
-  },
-  avatarContainer: {
-    position: "absolute",
-    bottom: 80,
-    left: 90,
-    right: 0,
-    alignItems: "center",
-    zIndex: 5,
-  },
-  avatar: {
-    width: 320,
-    height: 220,
-    resizeMode: "contain",
-  },
-  editButton: {
-    position: "absolute",
-    right: 22,
-    bottom: 22,
-    zIndex: 30,
-  },
-  editLogo: {
-    width: 48,
-    height: 48,
-    resizeMode: "contain",
-  },
+  topAvatar: { width: 60, height: 60, marginRight: 14, borderWidth: 2, borderColor: "#FEB5C0", backgroundColor: "#FEE3B4" },
+  topInfo: { flex: 1, justifyContent: "center" },
+  topName: { color: "#fff", fontSize: 30, marginBottom: 2, fontFamily: "Jersey15" },
+  topRole: { color: "#fff", fontSize: 25, fontFamily: "Jersey15" },
+  topStats: { flexDirection: "column", alignItems: "flex-end", gap: 6, marginLeft: 10 },
+  currencyRow: { flexDirection: "row", alignItems: "center", marginVertical: 2 },
+  currencyIcon: { width: 25, height: 25, marginRight: 5, resizeMode: "contain" },
+  stat: { color: "#fff", fontSize: 25, fontFamily: "Jersey15" },
+  avatarContainer: { position: "absolute", bottom: 80, left: 90, right: 0, alignItems: "center", zIndex: 5 },
+  avatar: { width: 320, height: 220, resizeMode: "contain" },
+  bubble: { position: "absolute", bottom: 180, backgroundColor: "#FFD1DC", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, borderWidth: 1, borderColor: "#D43C67", zIndex: 20 },
+  bubbleText: { fontSize: 18, fontWeight: "600", color: "#D43C67", textAlign: "center" },
+  fabNav: { position: "absolute", left: 0, top: 210, width: 40, height: 72, backgroundColor: "#FCE3CA", alignItems: "center", justifyContent: "center", zIndex: 15, borderTopRightRadius: 10, borderBottomRightRadius: 10, borderWidth: 1, borderColor: "#EDD3B8" },
+  sidebar: { position: "absolute", left: 36, top: 210, height: 72, backgroundColor: "#FFE9D1", borderTopRightRadius: 16, borderBottomRightRadius: 16, flexDirection: "row", alignItems: "center", paddingHorizontal: 8, zIndex: 19, borderWidth: 1, borderColor: "#EDD3B8" },
+  navRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", width: "100%" },
+  navButton: { flex: 1, backgroundColor: "#FFEDD8", borderRadius: 8, alignItems: "center", justifyContent: "center", paddingVertical: 6, marginHorizontal: 3 },
+  navLabel: { fontSize: 10, color: "#8C6444", textAlign: "center", marginTop: 2, lineHeight: 12, fontWeight: "600" },
+  customIcon: { width: 24, height: 24, resizeMode: "contain" },
+  editButton: { position: "absolute", right: 22, bottom: 22, zIndex: 30 },
+  editLogo: { width: 48, height: 48, resizeMode: "contain" },
 });
