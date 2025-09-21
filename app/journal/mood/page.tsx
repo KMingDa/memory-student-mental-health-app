@@ -1,5 +1,6 @@
 //mood of the day, 4x2 moods
 
+import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Image, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -8,13 +9,21 @@ export default function MoodPage() {
   const [selectedMood, setSelectedMood] = useState<string>('');
   const router = useRouter();
 
-  // Format today's date as "DD MMM YYYY" in all caps
+  // Load the custom fonts
+  const [fontsLoaded] = useFonts({
+    'PressStart2P-Regular': require('../../../assets/fonts/PressStart2P-Regular.ttf'),
+  });
+
+  // Format today's date with validation
   const today = new Date();
   const months = [
     'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
     'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'
   ];
-  const formattedDate = `${today.getDate().toString().padStart(2, '0')} ${months[today.getMonth()]} ${today.getFullYear()}`;
+  
+  // Ensure we never show a future date
+  const safeToday = new Date();
+  const formattedDate = `${safeToday.getDate().toString().padStart(2, '0')} ${months[safeToday.getMonth()]} ${safeToday.getFullYear()}`;
 
   const moods = [
     { id: 'happy', emoji: require('../../../assets/images/happy.png'), label: 'Happy' }, // <----- (change PNG path here)
@@ -26,6 +35,10 @@ export default function MoodPage() {
     { id: 'cool', emoji: require('../../../assets/images/cool.png'), label: 'Cool' }, // <----- (change PNG path here)
     { id: 'relaxed', emoji: require('../../../assets/images/relaxed.png'), label: 'Relaxed' } // <----- (change PNG path here)
   ];
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -138,6 +151,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     backgroundColor: '#FFF5F5',
+    marginTop: 40,
   },
   dateText: {
     color: '#000',

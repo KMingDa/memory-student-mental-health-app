@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     backgroundColor: '#FFF5F5',
-    marginTop: 24, // Add margin to push below notification bar
+    marginTop: 40, // Increased from 24 to 40 <---------------
   },
   dateText: {
     color: '#000',

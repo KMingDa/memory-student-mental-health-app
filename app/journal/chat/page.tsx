@@ -62,6 +62,59 @@ export default function ChatPage() {
     animateMessage(fadeAnimQuest, scaleAnimQuest, 5500); // 1 second after last message
   }, []);
 
+  // Add the same date navigation logic as entry page
+  const [selectedYear, setSelectedYear] = useState(today.getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(today.getMonth());
+  const [selectedDay, setSelectedDay] = useState(today.getDate());
+  const [selectedDate, setSelectedDate] = useState(formattedDate);
+
+  const handlePreviousDate = () => {
+    const currentDateObj = new Date(selectedYear, selectedMonth, selectedDay);
+    
+    // Don't allow going before 2020
+    const minDate = new Date(2020, 0, 1);
+    if (currentDateObj <= minDate) {
+      return;
+    }
+    
+    currentDateObj.setDate(currentDateObj.getDate() - 1);
+    
+    const newDate = `${currentDateObj.getDate().toString().padStart(2, '0')} ${months[currentDateObj.getMonth()]} ${currentDateObj.getFullYear()}`;
+    setSelectedDate(newDate);
+    setSelectedYear(currentDateObj.getFullYear());
+    setSelectedMonth(currentDateObj.getMonth());
+    setSelectedDay(currentDateObj.getDate());
+  };
+
+  const handleNextDate = () => {
+    const currentDateObj = new Date(selectedYear, selectedMonth, selectedDay);
+    const today = new Date();
+    
+    if (currentDateObj.toDateString() === today.toDateString()) {
+      return;
+    }
+    
+    currentDateObj.setDate(currentDateObj.getDate() + 1);
+    
+    const newDate = `${currentDateObj.getDate().toString().padStart(2, '0')} ${months[currentDateObj.getMonth()]} ${currentDateObj.getFullYear()}`;
+    setSelectedDate(newDate);
+    setSelectedYear(currentDateObj.getFullYear());
+    setSelectedMonth(currentDateObj.getMonth());
+    setSelectedDay(currentDateObj.getDate());
+  };
+
+  const canGoNext = () => {
+    const currentDateObj = new Date(selectedYear, selectedMonth, selectedDay);
+    const today = new Date();
+    return currentDateObj.toDateString() !== today.toDateString();
+  };
+
+  const canGoPrevious = () => {
+    const currentDateObj = new Date(selectedYear, selectedMonth, selectedDay);
+    const minDate = new Date(2020, 0, 1);
+    return currentDateObj > minDate;
+  };
+
   if (!fontsLoaded) {
     return null;
   }
@@ -170,7 +223,7 @@ export default function ChatPage() {
                 <Text style={styles.avatarText}>?</Text>
               </View>
               <View style={styles.messageBubble}>
-                <Text style={styles.messageText}>come find me at "town"!</Text>
+                <Text style={styles.messageText}>come find me at "home"!</Text>
               </View>
             </View>
           </Animated.View>
@@ -267,6 +320,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     backgroundColor: '#FFF5F5',
+    marginTop: 40,
   },
   dateText: {
     color: '#000',
@@ -316,7 +370,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   statusText: {
-    fontSize: 32,
+    fontSize: 16,
     fontFamily: 'Jersey10',
     color: '#333',
   },
@@ -332,8 +386,8 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   avatarContainer: {
-    width: 60,
-    height: 60,
+    width: 30,
+    height: 30,
     backgroundColor: '#FF6B7A',
     borderRadius: 15,
     justifyContent: 'center',
@@ -342,7 +396,7 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: 'white',
-    fontSize: 32,
+    fontSize: 16,
     fontFamily: 'Jersey10',
   },
   messageBubble: {
@@ -357,10 +411,10 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   messageText: {
-    fontSize: 28,
+    fontSize: 14,
     fontFamily: 'Jersey10',
     color: '#333',
-    lineHeight: 32,
+    lineHeight: 16,
   },
   questButtonContainer: {
     padding: 20,
@@ -371,8 +425,8 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   questImage: {
-    width: 600,
-    height: 100,
+    width: 330,
+    height: 75,
   },
   bottomNav: {
     flexDirection: 'row',
