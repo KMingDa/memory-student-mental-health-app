@@ -2,7 +2,7 @@
 
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Image, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function MoodPage() {
   const [selectedMood, setSelectedMood] = useState<string>('');
@@ -26,6 +26,15 @@ export default function MoodPage() {
     { id: 'cool', emoji: require('../../../assets/images/cool.png'), label: 'Cool' }, // <----- (change PNG path here)
     { id: 'relaxed', emoji: require('../../../assets/images/relaxed.png'), label: 'Relaxed' } // <----- (change PNG path here)
   ];
+
+  const goNext = () => {
+    if (!selectedMood) {
+      Alert.alert("Please select a mood first!");
+      return;
+    }
+    router.push({ pathname: '/journal/entry/page', params: { mood: selectedMood } });
+  };
+
 
   return (
     <SafeAreaView style={styles.container}>
@@ -80,7 +89,7 @@ export default function MoodPage() {
           <View style={styles.nextContainer}>
             <TouchableOpacity
               style={styles.nextButton}
-              onPress={() => router.push('/journal/entry/page')}
+              onPress={goNext}
             >
               <Text style={styles.nextArrow}>→</Text>
             </TouchableOpacity>
