@@ -1,4 +1,4 @@
-import { saveEntryLocal } from "@/utils/journal-store";
+import { addEntryAPI } from "@/utils/api";
 import { useFonts } from "expo-font";
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -52,19 +52,26 @@ export default function EntryPage() {
   if (!fontsLoaded) return null;
 
   const handleSave = async () => {
-    if (!diaryText.trim()) {
-      Alert.alert("Warning", "Please write something in your entry before saving!");
-      return;
-    }
+  if (!diaryText.trim()) {
+    Alert.alert("Warning", "Please write something in your entry before saving!");
+    return;
+  }
 
-    const entry = {
-      date: selectedDate,
-      diary: diaryText,
-      mood: mood,
-    };
-    await saveEntryLocal(entry);
-    router.push("/journal/chat/page");
+  const entry = {
+    date: selectedDate,
+    diary: diaryText,
+    mood: mood,
   };
+
+  try {
+    const result = await addEntryAPI(entry);
+    //Alert.alert("Entry Saved", `Tomorrow's predicted mood: ${result.predicted_next_mood}`);
+    router.push("/journal/chat/page");
+  } catch (err) {
+    Alert.alert("Error", "Failed to save entry to backend");
+  }
+};
+
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
