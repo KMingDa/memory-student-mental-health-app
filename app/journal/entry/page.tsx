@@ -1,3 +1,4 @@
+import { addEntryAPI } from "@/utils/api";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from "expo-font";
 import { useRouter } from 'expo-router';
@@ -161,6 +162,32 @@ export default function EntryPage() {
     } else if (pickerStep === 'day') {
       setPickerStep('month');
     }
+    return dates;
+  };
+
+  if (!fontsLoaded) return null;
+
+  const handleSave = async () => {
+  if (!diaryText.trim()) {
+    Alert.alert("Warning", "Please write something in your entry before saving!");
+    return;
+  }
+
+  const entry = {
+    date: selectedDate,
+    diary: diaryText,
+    mood: mood,
+  };
+
+  try {
+    const result = await addEntryAPI(entry);
+    //Alert.alert("Entry Saved", `Tomorrow's predicted mood: ${result.predicted_next_mood}`);
+    router.push("/journal/chat/page");
+  } catch (err) {
+    Alert.alert("Error", "Failed to save entry to backend");
+  }
+};
+
   };
 
   // Get picker title
