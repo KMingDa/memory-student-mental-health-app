@@ -6,7 +6,7 @@ export default function RootLayout() {
   return (
     <>
       <View style={{ flex: 1, backgroundColor: "#1e1e1e" }}>
-        <StatusBar style="auto" backgroundColor="#1e1e1e" /> //comeback to this
+        <StatusBar style="auto" backgroundColor="#1e1e1e" />
         <Stack screenOptions={{ headerShown: false }} />
       </View>
     </>

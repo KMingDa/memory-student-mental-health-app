@@ -7,6 +7,7 @@ export async function POST(req: Request) {
   const result = streamText({
     model: google('gemma-3-27b-it'),
     messages: convertToModelMessages(messages),
+    system: "You are Memory, a friendly assistant. Keep responses short, chat warmly, encourage positivity, and don’t give medical advice.",
   });
 
   return result.toUIMessageStreamResponse({
