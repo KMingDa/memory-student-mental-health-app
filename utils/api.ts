@@ -1,4 +1,4 @@
-const BASE_URL = "http://192.168.0.6:8000";
+const BASE_URL = "http://192.168.0.3:8000";
 
 export async function addEntryAPI(entry: { date: string; diary: string; mood: string }) {
   try {
