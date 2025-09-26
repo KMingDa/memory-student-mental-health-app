@@ -15,10 +15,12 @@ export default function LoginScreen() {
     const router = useRouter();
 
     const handleContinue = () => {
-        router.push('/login/loginpage')
+        //router.push('/login/loginpage')
 
         //if wanna see the chatbot look like
         //router.push('../memory-modal/modal-test')
+
+        router.push('../whackgame/app')
     }
 
     return (
