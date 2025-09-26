@@ -3,53 +3,81 @@ import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import usersJson from "../../assets/data/users.json";
+import users from "../../assets/data/users.json";
 import RetroWelcome from "../../components/RetroWelcome";
 
 const bgImage = require("../../assets/images/mainbg.jpg");
 
-export default function LoginScreen() {
+export default function SignUpScreen() {
     const [fontsLoaded] = useFonts({
         retro: require("../../assets/fonts/PressStart2P-Regular.ttf"),
     });
 
     const router = useRouter();
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
 
     if (!fontsLoaded) return null;
 
-    const handleLogin = async () => {
+    const handleSignUp = async () => {
+        if (!name || !email || !password || !confirmPassword) {
+            setError("All fields are required");
+            return;
+        }
+        if (password !== confirmPassword) {
+            setError("Passwords do not match");
+            return;
+        }
+
         try {
             const localUsersRaw = await AsyncStorage.getItem("users");
             const localUsers = localUsersRaw ? JSON.parse(localUsersRaw) : [];
 
-            const allUsers = [...usersJson, ...localUsers];
+            const allUsers = [...users, ...localUsers];
 
-            const user = allUsers.find(u => u.email === email && u.password === password);
-
-            if (user) {
-                setError("");
-                router.push("/furni-home/homesc");
-            } else {
-                setError("Invalid email or password");
+            const userExists = allUsers.find(u => u.email === email);
+            if (userExists) {
+                setError("User already exists");
+                return;
             }
+
+            const newUser = { name, email, password };
+
+            const updatedUsers = [...localUsers, newUser];
+            await AsyncStorage.setItem("users", JSON.stringify(updatedUsers));
+
+            setError("");
+            router.push("/login/loginpage");
         } catch (e) {
             console.error(e);
-            setError("Error reading users");
+            setError("Failed to save user");
         }
     };
 
     return (
         <ImageBackground source={bgImage} style={styles.background}>
             {/* Back Arrow */}
-            <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-                <Text style={[styles.backArrow, { fontFamily: "retro" }]}>{`<`}</Text>
+            <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => router.back()}
+            >
+                <Text style={[styles.backArrow, { fontFamily: "retro" }]}>{"<"}</Text>
             </TouchableOpacity>
 
             <View style={styles.overlay}>
                 <RetroWelcome />
+
+                <TextInput
+                    placeholder="Username"
+                    placeholderTextColor="#000000"
+                    value={name}
+                    onChangeText={setName}
+                    autoCapitalize="words"
+                    style={[styles.input, { fontFamily: "retro" }]}
+                />
 
                 <TextInput
                     placeholder="Email"
@@ -57,17 +85,24 @@ export default function LoginScreen() {
                     value={email}
                     onChangeText={setEmail}
                     autoCapitalize="none"
-                    autoCorrect={false}
                     keyboardType="email-address"
                     style={[styles.input, { fontFamily: "retro" }]}
                 />
+
                 <TextInput
                     placeholder="Password"
                     placeholderTextColor="#000000"
                     value={password}
                     onChangeText={setPassword}
-                    autoCapitalize="none"
-                    autoCorrect={false}
+                    secureTextEntry
+                    style={[styles.input, { fontFamily: "retro" }]}
+                />
+
+                <TextInput
+                    placeholder="Confirm Password"
+                    placeholderTextColor="#000000"
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
                     secureTextEntry
                     style={[styles.input, { fontFamily: "retro" }]}
                 />
@@ -78,8 +113,8 @@ export default function LoginScreen() {
                     </Text>
                 ) : null}
 
-                <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                    <Text style={[styles.buttonText, { fontFamily: "retro" }]}>LOGIN</Text>
+                <TouchableOpacity style={styles.button} onPress={handleSignUp}>
+                    <Text style={[styles.buttonText, { fontFamily: "retro" }]}>SIGN UP</Text>
                 </TouchableOpacity>
             </View>
         </ImageBackground>
