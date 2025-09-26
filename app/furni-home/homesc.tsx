@@ -19,14 +19,17 @@ import DailyCheckinModal from "./dailycheckin";
 // Weekly Quest Modal
 import WeeklyQuestModal from "./weeklyquest";
 
+// LLM Chat Modal
+import PixelDialog from "../memory-modal/popout";
+
 const assets = {
   avatar: require("@/assets/images/misavatar.png"),
+  teddybear: require("@/assets/images/bear.png"),
   misahead: require("@/assets/images/misahead.png"),
   background: require("@/assets/images/homebg.png"),
   currency1: require("../../assets/images/currency1.png"),
   currency2: require("../../assets/images/currency2.png"),
   edit: require("../../assets/images/edit.png"),
-
   leaderboard: require("../../assets/images/leaderboard.png"),
   selfcare: require("../../assets/images/selfcare.png"),
   palette: require("../../assets/images/palette.png"),
@@ -49,6 +52,7 @@ export default function HomeScreen() {
   const [showAvatarBubble, setShowAvatarBubble] = useState(false);
   const [showCheckin, setShowCheckin] = useState(false);
   const [showWeeklyQuest, setShowWeeklyQuest] = useState(false);
+  const [showDialog, setShowDialog] = useState(false); // Teddy bear dialog
   const bubbleTimeoutRef = useRef<number | null>(null);
 
   const router = useRouter();
@@ -210,16 +214,56 @@ export default function HomeScreen() {
         />
       )}
 
-      {/* Avatar */}
+
+
+      {/* Teddy Bear */}
+      <TouchableOpacity
+        onPress={() => setShowDialog(true)}
+        style={{ position: "absolute", bottom: 50, left: 20, zIndex: 4 }}
+      >
+        <Image source={assets.teddybear} style={{ width: 150, height: 150, resizeMode: "contain" }} />
+      </TouchableOpacity>
+
+
+      {/* Avatar*/}
       <View style={styles.avatarContainer}>
-        <TouchableOpacity onPress={handleAvatarClick}>
-          <Image source={assets.avatar} style={styles.avatar} />
+        {/* Avatar */}
+        <TouchableOpacity 
+          onPress={handleAvatarClick} 
+          style={{ 
+            position: "absolute", 
+            bottom: 30, 
+            left: -10,
+            width: 320, 
+            height: 220, 
+            zIndex: 5 
+          }}
+        >
+          <Image source={assets.avatar} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
         </TouchableOpacity>
+
+        {/* Bubble */}
         {showAvatarBubble && (
-          <View style={styles.bubble}>
-            <Text style={styles.bubbleText}>Where do I start?</Text>
+          <View style={{
+            position: "absolute",
+            bottom: 200,
+            left: 50,
+            width: 200,
+            backgroundColor: "#FFD1DC",
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: "#D43C67",
+            zIndex: 20,
+            alignItems: "center"
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", color: "#D43C67", textAlign: "center" }}>
+              Where do I start?
+            </Text>
           </View>
         )}
+
       </View>
 
       {/* Floating Nav Button */}
@@ -233,27 +277,50 @@ export default function HomeScreen() {
       {sidebarOpen && (
         <Animated.View style={[styles.sidebar, { width: sidebarWidth }]}>
           <View style={styles.navRow}>
-            <TouchableOpacity style={styles.navButton}>
+            <TouchableOpacity 
+              style={styles.navButton} 
+              onPress={() => router.push("/journal")}
+            >
               <Image source={assets.moodjournal} style={styles.customIcon} />
               <Text style={styles.navLabel}>mood journal</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton}>
+
+            <TouchableOpacity 
+              style={styles.navButton} 
+              //onPress={() => router.push("/self-care")}
+            >
               <Image source={assets.selfcare} style={styles.customIcon} />
               <Text style={styles.navLabel}>self-care journey</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton}>
+
+            <TouchableOpacity 
+              style={styles.navButton} 
+              onPress={() => router.push("../manorpalette/palette")}
+            >
               <Image source={assets.palette} style={styles.customIcon} />
               <Text style={styles.navLabel}>manor palette</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton}>
+
+            <TouchableOpacity 
+              style={styles.navButton} 
+              onPress={() => router.push("../dailynews/daily")}
+            >
               <Image source={assets.dailynews} style={styles.customIcon} />
               <Text style={styles.navLabel}>daily news</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton}>
+
+            <TouchableOpacity 
+              style={styles.navButton} 
+              onPress={() => router.push("../leaderboard/lead")}
+            >
               <Image source={assets.leaderboard} style={styles.customIcon} />
               <Text style={styles.navLabel}>leader board</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.navButton}>
+
+            <TouchableOpacity 
+              style={styles.navButton} 
+              onPress={() => router.push("../tracker")}
+            >
               <Image source={assets.extra} style={styles.customIcon} />
               <Text style={styles.navLabel}>luca's tracker</Text>
             </TouchableOpacity>
@@ -300,6 +367,9 @@ export default function HomeScreen() {
         name="Misa"
         completedQuests={2}
       />
+
+      {/* LLM Chat Modal */}
+      <PixelDialog visible={showDialog} onClose={() => setShowDialog(false)} />
     </ImageBackground>
   );
 }
@@ -340,7 +410,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     zIndex: 10,
   },
-  topAvatar: { width: 60, height: 60, marginRight: 14, borderWidth: 2, borderColor: "#FEB5C0", backgroundColor: "#FEE3B4" },
+  topAvatar: {
+    width: 60,
+    height: 60,
+    marginRight: 14,
+    borderWidth: 2,
+    borderColor: "#FEB5C0",
+    backgroundColor: "#FEE3B4",
+  },
   topInfo: { flex: 1, justifyContent: "center" },
   topName: { color: "#fff", fontSize: 30, marginBottom: 2, fontFamily: "Jersey15" },
   topRole: { color: "#fff", fontSize: 25, fontFamily: "Jersey15" },
@@ -348,8 +425,9 @@ const styles = StyleSheet.create({
   currencyRow: { flexDirection: "row", alignItems: "center", marginVertical: 2 },
   currencyIcon: { width: 25, height: 25, marginRight: 5, resizeMode: "contain" },
   stat: { color: "#fff", fontSize: 25, fontFamily: "Jersey15" },
-  avatarContainer: { position: "absolute", bottom: 80, left: 90, right: 0, alignItems: "center", zIndex: 5 },
+  avatarContainer: { position: "absolute", bottom: 80, left: 100, right: 0, alignItems: "center", zIndex: 5 },
   avatar: { width: 320, height: 220, resizeMode: "contain" },
+  teddyBear: { position: "absolute", bottom: -200, left: -250, width: 150, height: 150, resizeMode: "contain", zIndex: 4 },
   bubble: { position: "absolute", bottom: 180, backgroundColor: "#FFD1DC", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, borderWidth: 1, borderColor: "#D43C67", zIndex: 20 },
   bubbleText: { fontSize: 18, fontWeight: "600", color: "#D43C67", textAlign: "center" },
   fabNav: { position: "absolute", left: 0, top: 210, width: 40, height: 72, backgroundColor: "#FCE3CA", alignItems: "center", justifyContent: "center", zIndex: 15, borderTopRightRadius: 10, borderBottomRightRadius: 10, borderWidth: 1, borderColor: "#EDD3B8" },

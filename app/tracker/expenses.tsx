@@ -2,19 +2,20 @@ import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    Alert,
-    Image,
-    Modal,
-    SafeAreaView,
-    ScrollView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  Modal,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useTracker } from '../../contexts/TrackerContext';
+import PixelDialog from '../memory-modal/popout';
 
 // Simple inline calendar component (no external deps)
 // Calendar helpers (shared)
@@ -101,6 +102,7 @@ interface Expense {
 
 export default function ExpensesPage() {
   const router = useRouter();
+  const [showDialog, setShowDialog] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEPT', 'OCT', 'NOV', 'DEC'];
@@ -421,36 +423,26 @@ export default function ExpensesPage() {
       </Modal>
 
       {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Image
-            source={require('../../assets/images/home.png')}
-            style={styles.navImage}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Image
-            source={require('../../assets/images/bear.png')}
-            style={styles.navImage}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Image
-            source={require('../../assets/images/trophy.png')}
-            style={styles.navImage}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Image
-            source={require('../../assets/images/settings.png')}
-            style={styles.navImage}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
-      </View>
+                              <View style={styles.bottomNav}>
+                                <TouchableOpacity style={styles.navItem} onPress={() => router.push('../furni-home/homesc')}>
+                                  <Image source={require('../../assets/images/home.png')} style={styles.navImage} />
+                                </TouchableOpacity>
+                        
+                                <TouchableOpacity style={styles.navItem} onPress={() => setShowDialog(true)}>
+                                  <Image source={require('../../assets/images/bear.png')} style={styles.navImage} />
+                                </TouchableOpacity>
+                        
+                                <TouchableOpacity style={styles.navItem} onPress={() => router.push('../../leaderboard/lead')}>
+                                  <Image source={require('../../assets/images/trophy.png')} style={styles.navImage} />
+                                </TouchableOpacity>
+                        
+                                <TouchableOpacity style={styles.navItem}>
+                                  <Image source={require('../../assets/images/settings.png')} style={styles.navImage} />
+                                </TouchableOpacity>
+                              </View>
+                        
+                              {/* PixelDialog 弹窗 */}
+                              <PixelDialog visible={showDialog} onClose={() => setShowDialog(false)} />
     </SafeAreaView>
   );
 }
@@ -467,7 +459,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     backgroundColor: '#F8BBD9',
-    marginTop: 40,
+    marginTop: 0,
   },
   backButton: {
     fontSize: 12,
@@ -635,6 +627,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
+    marginBottom: -30,
   },
   navItem: {
     alignItems: 'center',

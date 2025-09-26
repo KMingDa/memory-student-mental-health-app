@@ -1,18 +1,21 @@
 // App.js
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
+import { useState } from 'react';
 import {
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
+import PixelDialog from '../memory-modal/popout';
 
 export default function App() {
   const router = useRouter();
+  const [showDialog, setShowDialog] = useState(false);
 
   // Load the custom font
   const [fontsLoaded] = useFonts({
@@ -79,12 +82,27 @@ export default function App() {
       </ScrollView>
 
       {/* --- Bottom Menu --- */}
-      <View style={styles.bottomMenu}>
-        <Image source={require("../../assets/images/home.png")} style={styles.icon} />
-        <Image source={require("../../assets/images/bear.png")} style={styles.icon} />
-        <Image source={require("../../assets/images/trophy.png")} style={styles.icon} />
-        <Image source={require("../../assets/images/settings.png")} style={styles.icon} />
-      </View>
+       {/* Bottom Navigation */}
+                        <View style={styles.bottomMenu}>
+                          <TouchableOpacity onPress={() => router.push('../furni-home/homesc')}>
+                            <Image source={require('../../assets/images/home.png')} style={styles.icon} />
+                          </TouchableOpacity>
+                  
+                          <TouchableOpacity onPress={() => setShowDialog(true)}>
+                            <Image source={require('../../assets/images/bear.png')} style={styles.icon} />
+                          </TouchableOpacity>
+                  
+                          <TouchableOpacity onPress={() => router.push('../../leaderboard/lead')}>
+                            <Image source={require('../../assets/images/trophy.png')} style={styles.icon} />
+                          </TouchableOpacity>
+                  
+                          <TouchableOpacity>
+                            <Image source={require('../../assets/images/settings.png')} style={styles.icon} />
+                          </TouchableOpacity>
+                        </View>
+                  
+                        {/* PixelDialog 弹窗 */}
+                        <PixelDialog visible={showDialog} onClose={() => setShowDialog(false)} />
     </SafeAreaView>
   );
 }
