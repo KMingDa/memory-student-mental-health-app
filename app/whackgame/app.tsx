@@ -4,7 +4,6 @@ import { StyleSheet } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 export default function GameScreen() {
-  // 锁定横屏
   useEffect(() => {
     ScreenOrientation.lockAsync(
       ScreenOrientation.OrientationLock.LANDSCAPE
@@ -14,7 +13,7 @@ export default function GameScreen() {
   return (
     <WebView
       originWhitelist={['*']}
-      source={{ uri: 'https://KMingDa.github.io/' }} // Phaser 游戏网址
+      source={{ uri: 'https://KMingDa.github.io/' }}
       style={styles.webview}
       javaScriptEnabled={true}
       domStorageEnabled={true}
