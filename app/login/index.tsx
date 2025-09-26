@@ -16,9 +16,6 @@ export default function LoginScreen() {
 
     const handleContinue = () => {
         router.push('/login/loginpage')
-
-        //if wanna see the chatbot look like
-        //router.push('../memory-modal/modal-test')
     }
 
     return (
