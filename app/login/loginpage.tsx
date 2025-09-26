@@ -1,6 +1,8 @@
 import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
+import { useState } from "react";
 import { ImageBackground, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import users from "../../assets/data/users.json";
 import RetroWelcome from "../../components/RetroWelcome";
 
 const bgImage = require("../../assets/images/mainbg.jpg");
@@ -12,12 +14,29 @@ export default function LoginScreen() {
 
     const router = useRouter();
 
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+
     if (!fontsLoaded) return null;
+
+    const handleLogin = () => {
+        const user = users.find((u) => u.email === email && u.password === password);
+        if (user) {
+            setError("");
+            router.push("/furni-home/homesc");
+        } else {
+            setError("Invalid email or password");
+        }
+    };
 
     return (
         <ImageBackground source={bgImage} style={styles.background}>
             {/* Back Arrow */}
-            <TouchableOpacity style={styles.backButton} onPress={() => router.push("/")}>
+            <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => router.back()}
+            >
                 <Text style={[styles.backArrow, { fontFamily: "retro" }]}>{"<"}</Text>
             </TouchableOpacity>
 
@@ -26,17 +45,32 @@ export default function LoginScreen() {
 
                 <TextInput
                     placeholder="Email"
-                    placeholderTextColor="#ccc"
+                    placeholderTextColor="#000000"
+                    value={email}
+                    onChangeText={setEmail}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="email-address"
                     style={[styles.input, { fontFamily: "retro" }]}
                 />
                 <TextInput
                     placeholder="Password"
-                    placeholderTextColor="#ccc"
+                    placeholderTextColor="#000000"
+                    value={password}
+                    onChangeText={setPassword}
+                    autoCapitalize="none"
+                    autoCorrect={false}
                     secureTextEntry
                     style={[styles.input, { fontFamily: "retro" }]}
                 />
 
-                <TouchableOpacity style={styles.button}>
+                {error ? (
+                    <Text style={{ color: "red", fontFamily: "retro", marginBottom: 10 }}>
+                        {error}
+                    </Text>
+                ) : null}
+
+                <TouchableOpacity style={styles.button} onPress={handleLogin}>
                     <Text style={[styles.buttonText, { fontFamily: "retro" }]}>LOGIN</Text>
                 </TouchableOpacity>
             </View>
