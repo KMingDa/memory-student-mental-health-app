@@ -124,7 +124,10 @@ export default function HomeScreen() {
     <ImageBackground source={assets.background} style={styles.background}>
       {/* Top Bar */}
       <View style={styles.topBar}>
-        <Image source={assets.misahead} style={styles.topAvatar} />
+        {/*Redirect to profile page on clicking avatar*/}
+        <TouchableOpacity onPress={() => router.push("/profile/profilemain")}>
+          <Image source={assets.misahead} style={styles.topAvatar} />
+        </TouchableOpacity>
         <View style={styles.topInfo}>
           <Text style={styles.topName}>Misa</Text>
           <Text style={styles.topRole}>Newbie Tester</Text>
