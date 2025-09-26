@@ -13,7 +13,12 @@ import {
   View,
 } from "react-native";
 
-// Main assets
+// Daily Check-in Modal
+import DailyCheckinModal from "./dailycheckin";
+
+// Weekly Quest Modal
+import WeeklyQuestModal from "./weeklyquest";
+
 const assets = {
   avatar: require("@/assets/images/misavatar.png"),
   misahead: require("@/assets/images/misahead.png"),
@@ -27,7 +32,9 @@ const assets = {
   palette: require("../../assets/images/palette.png"),
   moodjournal: require("../../assets/images/moodjournal.png"),
   dailynews: require("../../assets/images/dailynews.png"),
-  extra: require("../../assets/images/currency1.png"), // placeholder
+  extra: require("../../assets/images/currency1.png"),
+  checkin: require("../../assets/images/checkin.png"),
+  quest: require("../../assets/images/questicon.png"),
 };
 
 const { width } = Dimensions.get("window");
@@ -40,6 +47,8 @@ export default function HomeScreen() {
   const [selectedSofa, setSelectedSofa] = useState<number>(-1);
 
   const [showAvatarBubble, setShowAvatarBubble] = useState(false);
+  const [showCheckin, setShowCheckin] = useState(false);
+  const [showWeeklyQuest, setShowWeeklyQuest] = useState(false);
   const bubbleTimeoutRef = useRef<number | null>(null);
 
   const router = useRouter();
@@ -128,7 +137,7 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Greeting Bar below TopBar with close button */}
+      {/* Greeting Bar */}
       {showGreeting && (
         <View style={styles.greetingWrapper}>
           <Text style={styles.greetingText}>{greeting}</Text>
@@ -167,7 +176,7 @@ export default function HomeScreen() {
         />
       )}
 
-      {/* Sofa Layer with clickable touch */}
+      {/* Sofa Layer */}
       {selectedSofa >= 0 ? (
         <TouchableOpacity
           activeOpacity={0.9}
@@ -259,6 +268,38 @@ export default function HomeScreen() {
       >
         <Image source={assets.edit} style={styles.editLogo} />
       </TouchableOpacity>
+
+      {/* Check-in Button */}
+      <TouchableOpacity
+        style={styles.checkinButton}
+        onPress={() => setShowCheckin(true)}
+      >
+        <Image source={assets.checkin} style={styles.checkinIcon} />
+      </TouchableOpacity>
+
+      {/* Weekly Quest Button */}
+      <TouchableOpacity
+        style={styles.questButton}
+        onPress={() => setShowWeeklyQuest(true)}
+      >
+        <Image source={assets.quest} style={styles.questIcon} />
+      </TouchableOpacity>
+
+      {/* Daily Check-in Modal */}
+      <DailyCheckinModal
+        visible={showCheckin}
+        onClose={() => setShowCheckin(false)}
+        name="Misa"
+        checkedDays={3}
+      />
+
+      {/* Weekly Quest Modal */}
+      <WeeklyQuestModal
+        visible={showWeeklyQuest}
+        onClose={() => setShowWeeklyQuest(false)}
+        name="Misa"
+        completedQuests={2}
+      />
     </ImageBackground>
   );
 }
@@ -319,4 +360,20 @@ const styles = StyleSheet.create({
   customIcon: { width: 24, height: 24, resizeMode: "contain" },
   editButton: { position: "absolute", right: 22, bottom: 22, zIndex: 30 },
   editLogo: { width: 48, height: 48, resizeMode: "contain" },
+  checkinButton: {
+    position: "absolute",
+    right: 20,
+    top: "50%",
+    transform: [{ translateY: -25 }],
+    zIndex: 50,
+  },
+  checkinIcon: { width: 50, height: 50, resizeMode: "contain" },
+  questButton: {
+    position: "absolute",
+    right: 20,
+    top: "50%",
+    marginTop: 60,
+    zIndex: 50,
+  },
+  questIcon: { width: 45, height: 45, resizeMode: "contain" },
 });
