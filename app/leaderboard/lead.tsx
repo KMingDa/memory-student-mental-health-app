@@ -4,13 +4,13 @@ import { useFonts } from "expo-font";
 import { useFocusEffect } from "expo-router";
 import React, { useState } from "react";
 import {
-  FlatList,
-  Modal,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    FlatList,
+    Modal,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 // --- Types ---
@@ -118,6 +118,13 @@ export default function LeaderboardScreen() {
     );
 
     if (!fontsLoaded) return <Text>Loading...</Text>;
+
+    // 💡 NEW LOGIC: Generate the current date string
+    const today = new Date();
+    const day = today.getDate().toString().padStart(2, '0');
+    const month = today.toLocaleString('default', { month: 'short' }).toUpperCase();
+    const year = today.getFullYear();
+    const currentDateString = `${day} ${month} ${year}`;
     
     // Create the dynamic local leaderboard inside the component
     const localLeaderboard = baseLocalLeaderboard.map(entry => 
@@ -138,7 +145,8 @@ export default function LeaderboardScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Text style={styles.date}>28 AUG 2025</Text>
+            {/* 💡 UPDATED: Display the dynamic date string */}
+            <Text style={styles.date}>{currentDateString}</Text>
 
             <View style={styles.header}>
                 <Text style={styles.headerText}>
@@ -214,10 +222,10 @@ export default function LeaderboardScreen() {
     );
 }
 
-// --- Styles ---
+// --- Styles (Unchanged) ---
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#e6dcf6", padding: 12 },
-    date: { textAlign: "left", fontSize: 15, fontFamily: "Jersey20", marginBottom: 12, color: "#222" },
+    date: { textAlign: "left", fontSize: 20, fontFamily: "Jersey20", marginBottom: 12, color: "#222" },
     header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
     headerText: { fontSize: 40, fontFamily: "Jersey20", color: "#222", textAlign: "center", flex: 1 },
     infoBtn: { fontWeight: "700", fontSize: 14, backgroundColor: "#e6dcf6", paddingHorizontal: 10, paddingVertical: 2, borderRadius: 8, fontFamily: "Jersey20" },
