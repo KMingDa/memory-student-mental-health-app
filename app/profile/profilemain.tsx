@@ -1,5 +1,7 @@
+import AsyncStorage from "@react-native-async-storage/async-storage"; // Import AsyncStorage
 import { useFonts } from "expo-font";
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router"; // Import useFocusEffect
+import React, { useState } from "react"; // Import React and useState
 import {
     Image,
     ImageBackground,
@@ -37,9 +39,34 @@ const assets = {
 
 export default function ProfileMain() {
     const router = useRouter();
+    // 1. State for the username
+    const [userName, setUserName] = useState("Misa"); 
+
     const [fontsLoaded] = useFonts({
         jersey15: require("../../assets/fonts/Jersey15-Regular.ttf"),
     });
+
+    // 2. Data loading logic on screen focus
+    useFocusEffect(
+        React.useCallback(() => {
+            const loadUserName = async () => {
+                try {
+                    // Load the username from AsyncStorage
+                    const storedName = await AsyncStorage.getItem("currentUserName");
+                    if (storedName) {
+                        setUserName(storedName);
+                    } else {
+                        // Optional: Set a default name if nothing is found
+                        setUserName("Guest");
+                    }
+                } catch (err) {
+                    console.warn("Failed to load username:", err);
+                    setUserName("Guest");
+                }
+            };
+            loadUserName();
+        }, [])
+    );
 
     if (!fontsLoaded) return null;
 
@@ -53,7 +80,8 @@ export default function ProfileMain() {
                             <Image source={assets.misahead} style={styles.avatar} />
                             <View style={{ flex: 1 }}>
                                 <View style={styles.nameRow}>
-                                    <Text style={styles.name}>Misa</Text>
+                                    {/* 3. Use the state variable for the name */}
+                                    <Text style={styles.name}>{userName}</Text> 
                                     <Image source={assets.edit} style={styles.editIcon} />
                                 </View>
                                 <Text style={styles.role}>Newbie Tester</Text>
@@ -142,8 +170,6 @@ export default function ProfileMain() {
                             </Text>
                         </View>
                     </View>
-
-
                 </ScrollView>
 
                 {/* BOTTOM NAV */}
@@ -160,7 +186,7 @@ export default function ProfileMain() {
                         <Image source={assets.trophy} style={styles.navIcon} />
                     </TouchableOpacity>
 
-                    <TouchableOpacity onPress={() => router.push("/login/index")}>
+                    <TouchableOpacity onPress={() => router.push("/login")}>
                         <Image source={assets.settings} style={styles.navIcon} />
                     </TouchableOpacity>
                 </View>
