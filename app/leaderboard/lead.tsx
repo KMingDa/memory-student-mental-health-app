@@ -1,8 +1,8 @@
 // app/leaderboard/lead.tsx
-import AsyncStorage from "@react-native-async-storage/async-storage"; // 1. Import AsyncStorage
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts } from "expo-font";
-import { useFocusEffect } from "expo-router"; // 2. Import useFocusEffect
-import React, { useState } from "react"; // 3. Import React for useCallback
+import { useFocusEffect } from "expo-router";
+import React, { useState } from "react";
 import {
   FlatList,
   Modal,
@@ -22,7 +22,7 @@ interface LeaderboardEntry {
     rank?: number;
 }
 
-// --- Sample Data ---
+// --- Sample Data (Global remains constant) ---
 const globalLeaderboard: LeaderboardEntry[] = [
     { id: "1", name: "Cerydra", coins: 59000 },
     { id: "2", name: "Hysilens", coins: 40000 },
@@ -35,7 +35,8 @@ const globalLeaderboard: LeaderboardEntry[] = [
     { id: "9", name: "Cyrene", coins: 19888 },
 ];
 
-const localLeaderboard: LeaderboardEntry[] = [
+// Base Local Data (Misa will be replaced dynamically)
+const baseLocalLeaderboard: LeaderboardEntry[] = [
     { id: "1", name: "Zandar", coins: 5600 },
     { id: "2", name: "Polka", coins: 5400 },
     { id: "3", name: "Nous", coins: 5200 },
@@ -44,21 +45,22 @@ const localLeaderboard: LeaderboardEntry[] = [
     { id: "6", name: "Dolisu", coins: 4000 },
     { id: "7", name: "Shinami", coins: 3000 },
     { id: "8", name: "Silk", coins: 2000 },
-    { id: "9", name: "Misa", coins: 1500 },
+    { id: "9", name: "Misa", coins: 1500 }, // This is the placeholder entry
 ];
 
 // --- Components ---
 const LeaderboardItem = ({
     item,
     index,
-    currentUserName, // Pass currentUserName to highlight
+    currentUserName,
 }: {
     item: LeaderboardEntry;
     index: number;
     currentUserName: string;
 }) => {
-    // Highlight the current user in the local board
-    const isCurrentUser = item.name === currentUserName && item.id === "9"; 
+    // 💡 FIX: Highlight if the item's name matches the current user's name
+    // (This works for the local list where the user is at position 9)
+    const isCurrentUser = item.name === currentUserName; 
     
     return (
         <View style={[styles.row, isCurrentUser && styles.highlightRow]}>
@@ -93,14 +95,12 @@ const CurrentUserRow = ({ user }: { user: LeaderboardEntry }) => (
 export default function LeaderboardScreen() {
     const [aboutVisible, setAboutVisible] = useState(false);
     const [tab, setTab] = useState<"global" | "local">("global");
-    // 4. State for the current user's name
     const [currentUserName, setCurrentUserName] = useState("Guest"); 
 
     const [fontsLoaded] = useFonts({
         Jersey20: require("../../assets/fonts/Jersey20-Regular.ttf"),
     });
 
-    // 5. Load username from AsyncStorage
     useFocusEffect(
         React.useCallback(() => {
             const loadUserName = async () => {
@@ -118,14 +118,20 @@ export default function LeaderboardScreen() {
     );
 
     if (!fontsLoaded) return <Text>Loading...</Text>;
+    
+    // Create the dynamic local leaderboard inside the component
+    const localLeaderboard = baseLocalLeaderboard.map(entry => 
+        entry.id === "9" && entry.name === "Misa" 
+            ? { ...entry, name: currentUserName } // Replace Misa with currentUserName
+            : entry
+    );
 
     const leaderboardData = tab === "global" ? globalLeaderboard : localLeaderboard;
 
-    // 6. Create the dynamic currentUser object
     const currentUser: LeaderboardEntry = {
         id: "me",
-        name: currentUserName, // Use the state variable
-        coins: 1500, // Still hardcoded, but name is dynamic
+        name: currentUserName, 
+        coins: 1500,
         percentile: "1.0%",
         rank: 1234,
     };
@@ -166,7 +172,6 @@ export default function LeaderboardScreen() {
                 <FlatList
                     data={leaderboardData}
                     renderItem={({ item, index }) => (
-                        // 7. Pass the currentUserName to the item component
                         <LeaderboardItem 
                             item={item} 
                             index={index} 
@@ -235,4 +240,4 @@ const styles = StyleSheet.create({
     modalText: { fontSize: 14, fontFamily: "Jersey20", marginBottom: 20, lineHeight: 20 },
     closeBtn: { backgroundColor: "#d9c6f2", padding: 10, borderRadius: 8, alignItems: "center" },
     closeText: { fontFamily: "Jersey20" },
-})
+});
