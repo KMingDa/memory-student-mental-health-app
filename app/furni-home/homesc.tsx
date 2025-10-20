@@ -13,14 +13,10 @@ import {
   View,
 } from "react-native";
 
-// Daily Check-in Modal
-import DailyCheckinModal from "./dailycheckin";
-
-// Weekly Quest Modal
-import WeeklyQuestModal from "./weeklyquest";
-
-// LLM Chat Modal
+// Modals
 import PixelDialog from "../memory-modal/popout";
+import DailyCheckinModal from "./dailycheckin";
+import WeeklyQuestModal from "./weeklyquest";
 
 const assets = {
   avatar: require("@/assets/images/misavatar.png"),
@@ -43,25 +39,30 @@ const assets = {
 const { width } = Dimensions.get("window");
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   const [greeting, setGreeting] = useState("Good evening! How is your day?");
   const [showGreeting, setShowGreeting] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [selectedCurtain, setSelectedCurtain] = useState<number>(-1);
-  const [selectedSofa, setSelectedSofa] = useState<number>(-1);
+  const [selectedCurtain, setSelectedCurtain] = useState(-1);
+  const [selectedSofa, setSelectedSofa] = useState(-1);
+  const [userName, setUserName] = useState("");
 
   const [showAvatarBubble, setShowAvatarBubble] = useState(false);
   const [showCheckin, setShowCheckin] = useState(false);
   const [showWeeklyQuest, setShowWeeklyQuest] = useState(false);
-  const [showDialog, setShowDialog] = useState(false); // Teddy bear dialog
-  const bubbleTimeoutRef = useRef<number | null>(null);
+  const [showDialog, setShowDialog] = useState(false);
 
-  const router = useRouter();
+  // ✅ FIX: Cross-platform safe typing for timeout (works on iOS/Android/Web)
+  const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const sidebarWidth = useRef(new Animated.Value(56)).current;
+
   const [fontsLoaded] = useFonts({
     Jersey15: require("@/assets/fonts/Jersey15-Regular.ttf"),
   });
 
-  const sidebarWidth = React.useRef(new Animated.Value(56)).current;
-
+  // Toggle sidebar
   const toggleSidebar = () => {
     Animated.timing(sidebarWidth, {
       toValue: sidebarOpen ? 56 : width - 60,
@@ -71,18 +72,20 @@ export default function HomeScreen() {
     setSidebarOpen(!sidebarOpen);
   };
 
+  // Avatar click → show bubble for 4s
   const handleAvatarClick = () => {
     setShowAvatarBubble(true);
     if (bubbleTimeoutRef.current) clearTimeout(bubbleTimeoutRef.current);
     bubbleTimeoutRef.current = setTimeout(() => {
       setShowAvatarBubble(false);
       bubbleTimeoutRef.current = null;
-    }, 4000) as unknown as number;
+    }, 4000);
   };
 
+  // Load room layout + username from AsyncStorage
   useFocusEffect(
     React.useCallback(() => {
-      const loadLayout = async () => {
+      const loadData = async () => {
         try {
           const saved = await AsyncStorage.getItem("roomLayout");
           if (saved) {
@@ -90,11 +93,14 @@ export default function HomeScreen() {
             setSelectedCurtain(parsed?.curtain ?? -1);
             setSelectedSofa(parsed?.sofa ?? -1);
           }
+
+          const storedName = await AsyncStorage.getItem("currentUserName");
+          if (storedName) setUserName(storedName);
         } catch (err) {
-          console.warn("Failed to load room layout:", err);
+          console.warn("Failed to load data:", err);
         }
       };
-      loadLayout();
+      loadData();
     }, [])
   );
 
@@ -116,22 +122,21 @@ export default function HomeScreen() {
     ],
   };
 
-  if (!fontsLoaded) {
-    return <View style={{ flex: 1, backgroundColor: "#000" }} />;
-  }
+  if (!fontsLoaded) return <View style={{ flex: 1, backgroundColor: "#000" }} />;
 
   return (
     <ImageBackground source={assets.background} style={styles.background}>
       {/* Top Bar */}
       <View style={styles.topBar}>
-        {/*Redirect to profile page on clicking avatar*/}
         <TouchableOpacity onPress={() => router.push("/profile/profilemain")}>
           <Image source={assets.misahead} style={styles.topAvatar} />
         </TouchableOpacity>
+
         <View style={styles.topInfo}>
-          <Text style={styles.topName}>Misa</Text>
+          <Text style={styles.topName}>{userName || "Guest"}</Text>
           <Text style={styles.topRole}>Newbie Tester</Text>
         </View>
+
         <View style={styles.topStats}>
           <View style={styles.currencyRow}>
             <Image source={assets.currency1} style={styles.currencyIcon} />
@@ -144,129 +149,72 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Greeting Bar */}
+      {/* Greeting */}
       {showGreeting && (
         <View style={styles.greetingWrapper}>
-          <Text style={styles.greetingText}>{greeting}</Text>
+          <Text style={styles.greetingText}>
+            {`Good evening, ${userName || "Guest"}! How is your day?`}
+          </Text>
           <TouchableOpacity onPress={() => setShowGreeting(false)}>
             <Text style={styles.closeButton}>×</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* Curtain Layer */}
-      {selectedCurtain >= 0 ? (
-        <Image
-          source={furniAssets.curtain[selectedCurtain]}
-          style={{
-            position: "absolute",
-            top: 11,
-            left: -126,
-            width: 900,
-            height: 900,
-            zIndex: 2,
-            resizeMode: "contain",
-          }}
-        />
-      ) : (
-        <Image
-          source={require("@/assets/furnitures/window/curtains_base.png")}
-          style={{
-            position: "absolute",
-            top: 11,
-            left: -126,
-            width: 900,
-            height: 900,
-            zIndex: 1,
-            resizeMode: "contain",
-          }}
-        />
-      )}
+      {/* Curtains */}
+      <Image
+        source={
+          selectedCurtain >= 0
+            ? furniAssets.curtain[selectedCurtain]
+            : require("@/assets/furnitures/window/curtains_base.png")
+        }
+        style={styles.curtainImage}
+      />
 
-      {/* Sofa Layer */}
+      {/* Sofa */}
       {selectedSofa >= 0 ? (
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => setGreeting("How about taking a rest today?")}
-          style={{
-            position: "absolute",
-            top: 30,
-            left: -78,
-            width: 830,
-            height: 830,
-            zIndex: 3,
-          }}
+          onPress={() => setGreeting(`Take a break, ${userName || "friend"}!`)}
+          style={styles.sofaTouchable}
         >
           <Image
             source={furniAssets.sofa[selectedSofa]}
-            style={{ width: "100%", height: "100%", resizeMode: "contain" }}
+            style={styles.sofaImage}
           />
         </TouchableOpacity>
       ) : (
         <Image
           source={require("@/assets/furnitures/window/sofa_recolours.png")}
-          style={{
-            position: "absolute",
-            top: 30,
-            left: -78,
-            width: 830,
-            height: 830,
-            zIndex: 1,
-            resizeMode: "contain",
-          }}
+          style={styles.sofaImage}
         />
       )}
 
-
-
-      {/* Teddy Bear */}
+      {/* Teddy */}
       <TouchableOpacity
         onPress={() => setShowDialog(true)}
         style={{ position: "absolute", bottom: 50, left: 20, zIndex: 4 }}
       >
-        <Image source={assets.teddybear} style={{ width: 150, height: 150, resizeMode: "contain" }} />
+        <Image
+          source={assets.teddybear}
+          style={{ width: 150, height: 150, resizeMode: "contain" }}
+        />
       </TouchableOpacity>
 
-
-      {/* Avatar*/}
+      {/* Avatar */}
       <View style={styles.avatarContainer}>
-        {/* Avatar */}
-        <TouchableOpacity 
-          onPress={handleAvatarClick} 
-          style={{ 
-            position: "absolute", 
-            bottom: 30, 
-            left: -10,
-            width: 320, 
-            height: 220, 
-            zIndex: 5 
-          }}
-        >
-          <Image source={assets.avatar} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
+        <TouchableOpacity onPress={handleAvatarClick} style={styles.avatarTouchable}>
+          <Image
+            source={assets.avatar}
+            style={{ width: "100%", height: "100%", resizeMode: "contain" }}
+          />
         </TouchableOpacity>
 
-        {/* Bubble */}
         {showAvatarBubble && (
-          <View style={{
-            position: "absolute",
-            bottom: 200,
-            left: 50,
-            width: 200,
-            backgroundColor: "#FFD1DC",
-            paddingHorizontal: 14,
-            paddingVertical: 8,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor: "#D43C67",
-            zIndex: 20,
-            alignItems: "center"
-          }}>
-            <Text style={{ fontSize: 18, fontWeight: "600", color: "#D43C67", textAlign: "center" }}>
-              Where do I start?
-            </Text>
+          <View style={styles.bubble}>
+            <Text style={styles.bubbleText}>Where do I start?</Text>
           </View>
         )}
-
       </View>
 
       {/* Floating Nav Button */}
@@ -280,48 +228,45 @@ export default function HomeScreen() {
       {sidebarOpen && (
         <Animated.View style={[styles.sidebar, { width: sidebarWidth }]}>
           <View style={styles.navRow}>
-            <TouchableOpacity 
-              style={styles.navButton} 
+            <TouchableOpacity
+              style={styles.navButton}
               onPress={() => router.push("/journal")}
             >
               <Image source={assets.moodjournal} style={styles.customIcon} />
               <Text style={styles.navLabel}>mood journal</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.navButton} 
-              //onPress={() => router.push("/self-care")}
-            >
+            <TouchableOpacity style={styles.navButton}>
               <Image source={assets.selfcare} style={styles.customIcon} />
               <Text style={styles.navLabel}>self-care journey</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.navButton} 
+            <TouchableOpacity
+              style={styles.navButton}
               onPress={() => router.push("../manorpalette/palette")}
             >
               <Image source={assets.palette} style={styles.customIcon} />
               <Text style={styles.navLabel}>manor palette</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.navButton} 
+            <TouchableOpacity
+              style={styles.navButton}
               onPress={() => router.push("../dailynews/daily")}
             >
               <Image source={assets.dailynews} style={styles.customIcon} />
               <Text style={styles.navLabel}>daily news</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.navButton} 
+            <TouchableOpacity
+              style={styles.navButton}
               onPress={() => router.push("../leaderboard/lead")}
             >
               <Image source={assets.leaderboard} style={styles.customIcon} />
               <Text style={styles.navLabel}>leader board</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.navButton} 
+            <TouchableOpacity
+              style={styles.navButton}
               onPress={() => router.push("../tracker")}
             >
               <Image source={assets.extra} style={styles.customIcon} />
@@ -339,7 +284,7 @@ export default function HomeScreen() {
         <Image source={assets.edit} style={styles.editLogo} />
       </TouchableOpacity>
 
-      {/* Check-in Button */}
+      {/* Check-in */}
       <TouchableOpacity
         style={styles.checkinButton}
         onPress={() => setShowCheckin(true)}
@@ -347,7 +292,7 @@ export default function HomeScreen() {
         <Image source={assets.checkin} style={styles.checkinIcon} />
       </TouchableOpacity>
 
-      {/* Weekly Quest Button */}
+      {/* Quest */}
       <TouchableOpacity
         style={styles.questButton}
         onPress={() => setShowWeeklyQuest(true)}
@@ -355,106 +300,127 @@ export default function HomeScreen() {
         <Image source={assets.quest} style={styles.questIcon} />
       </TouchableOpacity>
 
-      {/* Daily Check-in Modal */}
+      {/* Modals */}
       <DailyCheckinModal
         visible={showCheckin}
         onClose={() => setShowCheckin(false)}
-        name="Misa"
+        name={userName || "Guest"}
         checkedDays={3}
       />
 
-      {/* Weekly Quest Modal */}
       <WeeklyQuestModal
         visible={showWeeklyQuest}
         onClose={() => setShowWeeklyQuest(false)}
-        name="Misa"
+        name={userName || "Guest"}
         completedQuests={2}
       />
 
-      {/* LLM Chat Modal */}
       <PixelDialog visible={showDialog} onClose={() => setShowDialog(false)} />
     </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-    justifyContent: "flex-end",
-  },
-  greetingWrapper: {
+  background: { flex: 1, resizeMode: "cover" },
+  topBar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    backgroundColor: "rgba(255,192,203,0.9)",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    position: "absolute",
-    top: 110,
-    left: 10,
-    right: 10,
-    zIndex: 50,
+    padding: 15,
+    marginTop: 30,
   },
-  greetingText: { fontWeight: "bold", flex: 1, textAlign: "center" },
-  closeButton: { fontSize: 18, fontWeight: "bold", marginLeft: 10 },
-  topBar: {
-    position: "absolute",
-    top: 36,
-    left: 0,
-    right: 0,
+  topAvatar: { width: 55, height: 55, borderRadius: 30 },
+  topInfo: { flex: 1, marginLeft: 10 },
+  topName: { fontSize: 16, color: "#fff", fontFamily: "Jersey15" },
+  topRole: { fontSize: 12, color: "#d0d0d0", fontFamily: "Jersey15" },
+  topStats: { flexDirection: "row", alignItems: "center" },
+  currencyRow: { flexDirection: "row", alignItems: "center", marginLeft: 10 },
+  currencyIcon: { width: 20, height: 20, marginRight: 4 },
+  stat: { color: "#fff", fontSize: 14, fontFamily: "Jersey15" },
+  greetingWrapper: {
+    backgroundColor: "rgba(0,0,0,0.6)",
+    borderRadius: 10,
+    marginHorizontal: 20,
+    marginTop: 10,
+    padding: 10,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "rgba(254, 181, 192, 0.50)",
-    paddingVertical: 3,
-    paddingHorizontal: 14,
-    zIndex: 10,
   },
-  topAvatar: {
-    width: 60,
-    height: 60,
-    marginRight: 14,
-    borderWidth: 2,
-    borderColor: "#FEB5C0",
-    backgroundColor: "#FEE3B4",
-  },
-  topInfo: { flex: 1, justifyContent: "center" },
-  topName: { color: "#fff", fontSize: 30, marginBottom: 2, fontFamily: "Jersey15" },
-  topRole: { color: "#fff", fontSize: 25, fontFamily: "Jersey15" },
-  topStats: { flexDirection: "column", alignItems: "flex-end", gap: 6, marginLeft: 10 },
-  currencyRow: { flexDirection: "row", alignItems: "center", marginVertical: 2 },
-  currencyIcon: { width: 25, height: 25, marginRight: 5, resizeMode: "contain" },
-  stat: { color: "#fff", fontSize: 25, fontFamily: "Jersey15" },
-  avatarContainer: { position: "absolute", bottom: 80, left: 100, right: 0, alignItems: "center", zIndex: 5 },
-  avatar: { width: 320, height: 220, resizeMode: "contain" },
-  teddyBear: { position: "absolute", bottom: -200, left: -250, width: 150, height: 150, resizeMode: "contain", zIndex: 4 },
-  bubble: { position: "absolute", bottom: 180, backgroundColor: "#FFD1DC", paddingHorizontal: 14, paddingVertical: 8, borderRadius: 16, borderWidth: 1, borderColor: "#D43C67", zIndex: 20 },
-  bubbleText: { fontSize: 18, fontWeight: "600", color: "#D43C67", textAlign: "center" },
-  fabNav: { position: "absolute", left: 0, top: 210, width: 40, height: 72, backgroundColor: "#FCE3CA", alignItems: "center", justifyContent: "center", zIndex: 15, borderTopRightRadius: 10, borderBottomRightRadius: 10, borderWidth: 1, borderColor: "#EDD3B8" },
-  sidebar: { position: "absolute", left: 36, top: 210, height: 72, backgroundColor: "#FFE9D1", borderTopRightRadius: 16, borderBottomRightRadius: 16, flexDirection: "row", alignItems: "center", paddingHorizontal: 8, zIndex: 19, borderWidth: 1, borderColor: "#EDD3B8" },
-  navRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", width: "100%" },
-  navButton: { flex: 1, backgroundColor: "#FFEDD8", borderRadius: 8, alignItems: "center", justifyContent: "center", paddingVertical: 6, marginHorizontal: 3 },
-  navLabel: { fontSize: 10, color: "#8C6444", textAlign: "center", marginTop: 2, lineHeight: 12, fontWeight: "600" },
-  customIcon: { width: 24, height: 24, resizeMode: "contain" },
-  editButton: { position: "absolute", right: 22, bottom: 22, zIndex: 30 },
-  editLogo: { width: 48, height: 48, resizeMode: "contain" },
-  checkinButton: {
+  greetingText: { color: "#fff", flex: 1, fontFamily: "Jersey15" },
+  closeButton: { color: "#fff", fontSize: 18, marginLeft: 10 },
+  curtainImage: {
     position: "absolute",
-    right: 20,
-    top: "50%",
-    transform: [{ translateY: -25 }],
-    zIndex: 50,
+    top: 100,
+    left: 0,
+    width: "100%",
+    height: 150,
+    resizeMode: "contain",
   },
-  checkinIcon: { width: 50, height: 50, resizeMode: "contain" },
-  questButton: {
+  sofaTouchable: { position: "absolute", bottom: 80, alignSelf: "center" },
+  sofaImage: {
+    width: 260,
+    height: 120,
+    resizeMode: "contain",
+    alignSelf: "center",
+  },
+  avatarContainer: {
     position: "absolute",
-    right: 20,
-    top: "50%",
-    marginTop: 60,
-    zIndex: 50,
+    bottom: 130,
+    right: 30,
+    width: 120,
+    height: 120,
   },
-  questIcon: { width: 45, height: 45, resizeMode: "contain" },
+  avatarTouchable: { width: "100%", height: "100%" },
+  bubble: {
+    position: "absolute",
+    bottom: 120,
+    right: 0,
+    backgroundColor: "#fff",
+    padding: 6,
+    borderRadius: 8,
+  },
+  bubbleText: { fontFamily: "Jersey15", fontSize: 12, color: "#000" },
+  fabNav: {
+    position: "absolute",
+    bottom: 50,
+    right: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sidebar: {
+    position: "absolute",
+    right: 0,
+    bottom: 100,
+    top: 0,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    borderTopLeftRadius: 20,
+    borderBottomLeftRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 10,
+  },
+  navRow: { gap: 15 },
+  navButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  customIcon: { width: 30, height: 30 },
+  navLabel: { fontFamily: "Jersey15", fontSize: 14, color: "#333" },
+  editButton: {
+    position: "absolute",
+    bottom: 120,
+    right: 20,
+    backgroundColor: "#fff",
+    padding: 10,
+    borderRadius: 20,
+  },
+  editLogo: { width: 30, height: 30 },
+  checkinButton: { position: "absolute", bottom: 200, right: 25 },
+  checkinIcon: { width: 50, height: 50 },
+  questButton: { position: "absolute", bottom: 260, right: 25 },
+  questIcon: { width: 50, height: 50 },
 });
