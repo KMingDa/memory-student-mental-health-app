@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 
-// Modals
+// Modals (Keeping the clean imports from Updated Code)
 import PixelDialog from "../memory-modal/popout";
 import DailyCheckinModal from "./dailycheckin";
 import WeeklyQuestModal from "./weeklyquest";
@@ -46,6 +46,7 @@ export default function HomeScreen() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedCurtain, setSelectedCurtain] = useState(-1);
   const [selectedSofa, setSelectedSofa] = useState(-1);
+  // ✅ Kept username state and logic from Updated Code
   const [userName, setUserName] = useState("");
 
   const [showAvatarBubble, setShowAvatarBubble] = useState(false);
@@ -53,7 +54,7 @@ export default function HomeScreen() {
   const [showWeeklyQuest, setShowWeeklyQuest] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
 
-  // ✅ FIX: Cross-platform safe typing for timeout (works on iOS/Android/Web)
+  // ✅ Kept cross-platform safe typing for timeout from Updated Code
   const bubbleTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sidebarWidth = useRef(new Animated.Value(56)).current;
@@ -62,10 +63,10 @@ export default function HomeScreen() {
     Jersey15: require("@/assets/fonts/Jersey15-Regular.ttf"),
   });
 
-  // Toggle sidebar
+  // Toggle sidebar (Kept original logic for open width)
   const toggleSidebar = () => {
     Animated.timing(sidebarWidth, {
-      toValue: sidebarOpen ? 56 : width - 60,
+      toValue: sidebarOpen ? 56 : width - 60, // Original width logic
       duration: 250,
       useNativeDriver: false,
     }).start();
@@ -76,13 +77,14 @@ export default function HomeScreen() {
   const handleAvatarClick = () => {
     setShowAvatarBubble(true);
     if (bubbleTimeoutRef.current) clearTimeout(bubbleTimeoutRef.current);
+    // ✅ Kept cross-platform safe typing for timeout from Updated Code
     bubbleTimeoutRef.current = setTimeout(() => {
       setShowAvatarBubble(false);
       bubbleTimeoutRef.current = null;
     }, 4000);
   };
 
-  // Load room layout + username from AsyncStorage
+  // Load room layout + username from AsyncStorage (Kept all loading logic from Updated Code)
   useFocusEffect(
     React.useCallback(() => {
       const loadData = async () => {
@@ -95,7 +97,7 @@ export default function HomeScreen() {
           }
 
           const storedName = await AsyncStorage.getItem("currentUserName");
-          if (storedName) setUserName(storedName);
+          if (storedName) setUserName(storedName); // Load username
         } catch (err) {
           console.warn("Failed to load data:", err);
         }
@@ -128,15 +130,15 @@ export default function HomeScreen() {
     <ImageBackground source={assets.background} style={styles.background}>
       {/* Top Bar */}
       <View style={styles.topBar}>
+        {/*Redirect to profile page on clicking avatar*/}
         <TouchableOpacity onPress={() => router.push("/profile/profilemain")}>
           <Image source={assets.misahead} style={styles.topAvatar} />
         </TouchableOpacity>
-
         <View style={styles.topInfo}>
-          <Text style={styles.topName}>{userName || "Guest"}</Text>
+          {/* ✅ Use loaded username */}
+          <Text style={styles.topName}>{userName || "Misa"}</Text>
           <Text style={styles.topRole}>Newbie Tester</Text>
         </View>
-
         <View style={styles.topStats}>
           <View style={styles.currencyRow}>
             <Image source={assets.currency1} style={styles.currencyIcon} />
@@ -149,11 +151,12 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Greeting */}
+      {/* Greeting Bar */}
       {showGreeting && (
         <View style={styles.greetingWrapper}>
+          {/* ✅ Use loaded username in greeting */}
           <Text style={styles.greetingText}>
-            {`Good evening, ${userName || "Guest"}! How is your day?`}
+            {`Good evening, ${userName || "friend"}! How is your day?`}
           </Text>
           <TouchableOpacity onPress={() => setShowGreeting(false)}>
             <Text style={styles.closeButton}>×</Text>
@@ -161,73 +164,132 @@ export default function HomeScreen() {
         </View>
       )}
 
-      {/* Curtains */}
-      <Image
-        source={
-          selectedCurtain >= 0
-            ? furniAssets.curtain[selectedCurtain]
-            : require("@/assets/furnitures/window/curtains_base.png")
-        }
-        style={styles.curtainImage}
-      />
+      {/* Curtain Layer (Restored Original Positioning/Sizing) */}
+      {selectedCurtain >= 0 ? (
+        <Image
+          source={furniAssets.curtain[selectedCurtain]}
+          style={{
+            position: "absolute",
+            top: 11,
+            left: -126,
+            width: 900,
+            height: 900,
+            zIndex: 2,
+            resizeMode: "contain",
+          }}
+        />
+      ) : (
+        <Image
+          source={require("@/assets/furnitures/window/curtains_base.png")}
+          style={{
+            position: "absolute",
+            top: 11,
+            left: -126,
+            width: 900,
+            height: 900,
+            zIndex: 1,
+            resizeMode: "contain",
+          }}
+        />
+      )}
 
-      {/* Sofa */}
+      {/* Sofa Layer (Restored Original Positioning/Sizing and interaction) */}
       {selectedSofa >= 0 ? (
         <TouchableOpacity
           activeOpacity={0.9}
-          onPress={() => setGreeting(`Take a break, ${userName || "friend"}!`)}
-          style={styles.sofaTouchable}
+          onPress={() => setGreeting(`How about taking a rest today, ${userName || "friend"}?`)}
+          style={{
+            position: "absolute",
+            top: 30,
+            left: -78,
+            width: 830,
+            height: 830,
+            zIndex: 3,
+          }}
         >
           <Image
             source={furniAssets.sofa[selectedSofa]}
-            style={styles.sofaImage}
+            style={{ width: "100%", height: "100%", resizeMode: "contain" }}
           />
         </TouchableOpacity>
       ) : (
         <Image
           source={require("@/assets/furnitures/window/sofa_recolours.png")}
-          style={styles.sofaImage}
+          style={{
+            position: "absolute",
+            top: 30,
+            left: -78,
+            width: 830,
+            height: 830,
+            zIndex: 1,
+            resizeMode: "contain",
+          }}
         />
       )}
 
-      {/* Teddy */}
+
+      {/* Teddy Bear (Restored Original Positioning/Sizing) */}
       <TouchableOpacity
         onPress={() => setShowDialog(true)}
         style={{ position: "absolute", bottom: 50, left: 20, zIndex: 4 }}
       >
-        <Image
-          source={assets.teddybear}
-          style={{ width: 150, height: 150, resizeMode: "contain" }}
-        />
+        <Image source={assets.teddybear} style={{ width: 150, height: 150, resizeMode: "contain" }} />
       </TouchableOpacity>
 
-      {/* Avatar */}
+
+      {/* Avatar (Restored Original Positioning/Sizing) */}
       <View style={styles.avatarContainer}>
-        <TouchableOpacity onPress={handleAvatarClick} style={styles.avatarTouchable}>
-          <Image
-            source={assets.avatar}
-            style={{ width: "100%", height: "100%", resizeMode: "contain" }}
-          />
+        {/* Avatar */}
+        <TouchableOpacity
+          onPress={handleAvatarClick}
+          style={{
+            position: "absolute",
+            bottom: 30,
+            left: -10,
+            width: 320,
+            height: 220,
+            zIndex: 5
+          }}
+        >
+          <Image source={assets.avatar} style={{ width: '100%', height: '100%', resizeMode: 'contain' }} />
         </TouchableOpacity>
 
+        {/* Bubble (Restored Original Positioning/Sizing) */}
         {showAvatarBubble && (
-          <View style={styles.bubble}>
-            <Text style={styles.bubbleText}>Where do I start?</Text>
+          <View style={{
+            position: "absolute",
+            bottom: 200,
+            left: 50,
+            width: 200,
+            backgroundColor: "#FFD1DC",
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: "#D43C67",
+            zIndex: 20,
+            alignItems: "center"
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: "600", color: "#D43C67", textAlign: "center" }}>
+              Where do I start?
+            </Text>
           </View>
         )}
+
       </View>
 
-      {/* Floating Nav Button */}
+      {/* Floating Nav Button (Restored Original Positioning/Sizing) */}
       <TouchableOpacity style={styles.fabNav} onPress={toggleSidebar}>
         <Text style={{ fontSize: 22, color: "#A77C54" }}>
           {sidebarOpen ? "<" : "≡"}
         </Text>
       </TouchableOpacity>
 
-      {/* Sidebar */}
+      {/* Sidebar (Restored Original Positioning/Sizing) */}
       {sidebarOpen && (
         <Animated.View style={[styles.sidebar, { width: sidebarWidth }]}>
           <View style={styles.navRow}>
+            {/* Sidebar Buttons (Restored Original Structure/Styling) */}
             <TouchableOpacity
               style={styles.navButton}
               onPress={() => router.push("/journal")}
@@ -236,7 +298,10 @@ export default function HomeScreen() {
               <Text style={styles.navLabel}>mood journal</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.navButton}>
+            <TouchableOpacity
+              style={styles.navButton}
+            //onPress={() => router.push("/self-care")} // Keeping commented as in original
+            >
               <Image source={assets.selfcare} style={styles.customIcon} />
               <Text style={styles.navLabel}>self-care journey</Text>
             </TouchableOpacity>
@@ -276,7 +341,7 @@ export default function HomeScreen() {
         </Animated.View>
       )}
 
-      {/* Edit Button */}
+      {/* Edit Button (Restored Original Positioning/Sizing) */}
       <TouchableOpacity
         onPress={() => router.push("/furni-home/homesc2")}
         style={styles.editButton}
@@ -284,7 +349,7 @@ export default function HomeScreen() {
         <Image source={assets.edit} style={styles.editLogo} />
       </TouchableOpacity>
 
-      {/* Check-in */}
+      {/* Check-in Button (Restored Original Positioning/Sizing) */}
       <TouchableOpacity
         style={styles.checkinButton}
         onPress={() => setShowCheckin(true)}
@@ -292,7 +357,7 @@ export default function HomeScreen() {
         <Image source={assets.checkin} style={styles.checkinIcon} />
       </TouchableOpacity>
 
-      {/* Quest */}
+      {/* Weekly Quest Button (Restored Original Positioning/Sizing) */}
       <TouchableOpacity
         style={styles.questButton}
         onPress={() => setShowWeeklyQuest(true)}
@@ -300,18 +365,18 @@ export default function HomeScreen() {
         <Image source={assets.quest} style={styles.questIcon} />
       </TouchableOpacity>
 
-      {/* Modals */}
+      {/* Modals (Kept from Updated Code) */}
       <DailyCheckinModal
         visible={showCheckin}
         onClose={() => setShowCheckin(false)}
-        name={userName || "Guest"}
+        name={userName || "Guest"} // Use loaded username
         checkedDays={3}
       />
 
       <WeeklyQuestModal
         visible={showWeeklyQuest}
         onClose={() => setShowWeeklyQuest(false)}
-        name={userName || "Guest"}
+        name={userName || "Guest"} // Use loaded username
         completedQuests={2}
       />
 
@@ -320,107 +385,164 @@ export default function HomeScreen() {
   );
 }
 
+// ----------------------------------------------------------------
+// MERGED STYLES - Prioritizing Original Code's appearance/layout
+// ----------------------------------------------------------------
+
 const styles = StyleSheet.create({
-  background: { flex: 1, resizeMode: "cover" },
+  background: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+    justifyContent: "flex-end",
+  },
+  // --- TOP BAR (Original Styling) ---
   topBar: {
+    position: "absolute",
+    top: 36,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(254, 181, 192, 0.50)",
+    paddingVertical: 3,
+    paddingHorizontal: 14,
+    zIndex: 10,
+  },
+  topAvatar: {
+    width: 60,
+    height: 60,
+    marginRight: 14,
+    borderWidth: 2,
+    borderColor: "#FEB5C0",
+    backgroundColor: "#FEE3B4",
+  },
+  topInfo: { flex: 1, justifyContent: "center" },
+  topName: { color: "#fff", fontSize: 30, marginBottom: 2, fontFamily: "Jersey15" },
+  topRole: { color: "#fff", fontSize: 25, fontFamily: "Jersey15" },
+  topStats: { flexDirection: "column", alignItems: "flex-end", gap: 6, marginLeft: 10 },
+  currencyRow: { flexDirection: "row", alignItems: "center", marginVertical: 2 },
+  currencyIcon: { width: 25, height: 25, marginRight: 5, resizeMode: "contain" },
+  stat: { color: "#fff", fontSize: 25, fontFamily: "Jersey15" },
+
+  // --- GREETING (Original Styling) ---
+  greetingWrapper: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 15,
-    marginTop: 30,
-  },
-  topAvatar: { width: 55, height: 55, borderRadius: 30 },
-  topInfo: { flex: 1, marginLeft: 10 },
-  topName: { fontSize: 16, color: "#fff", fontFamily: "Jersey15" },
-  topRole: { fontSize: 12, color: "#d0d0d0", fontFamily: "Jersey15" },
-  topStats: { flexDirection: "row", alignItems: "center" },
-  currencyRow: { flexDirection: "row", alignItems: "center", marginLeft: 10 },
-  currencyIcon: { width: 20, height: 20, marginRight: 4 },
-  stat: { color: "#fff", fontSize: 14, fontFamily: "Jersey15" },
-  greetingWrapper: {
-    backgroundColor: "rgba(0,0,0,0.6)",
-    borderRadius: 10,
-    marginHorizontal: 20,
-    marginTop: 10,
-    padding: 10,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  greetingText: { color: "#fff", flex: 1, fontFamily: "Jersey15" },
-  closeButton: { color: "#fff", fontSize: 18, marginLeft: 10 },
-  curtainImage: {
+    backgroundColor: "rgba(255,192,203,0.9)",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
     position: "absolute",
-    top: 100,
-    left: 0,
-    width: "100%",
-    height: 150,
-    resizeMode: "contain",
+    top: 110,
+    left: 10,
+    right: 10,
+    zIndex: 50,
   },
-  sofaTouchable: { position: "absolute", bottom: 80, alignSelf: "center" },
-  sofaImage: {
-    width: 260,
-    height: 120,
-    resizeMode: "contain",
-    alignSelf: "center",
-  },
+  greetingText: { fontWeight: "bold", flex: 1, textAlign: "center" },
+  closeButton: { fontSize: 18, fontWeight: "bold", marginLeft: 10 },
+
+  // --- AVATAR & BUBBLE (Original Styling for container, bubble/text styles restored) ---
+  // The positioning for the avatar and bubble is handled inline in the return block
   avatarContainer: {
     position: "absolute",
-    bottom: 130,
-    right: 30,
-    width: 120,
-    height: 120,
+    bottom: 80,
+    left: 100,
+    right: 0,
+    alignItems: "center",
+    zIndex: 5
   },
-  avatarTouchable: { width: "100%", height: "100%" },
   bubble: {
     position: "absolute",
-    bottom: 120,
-    right: 0,
-    backgroundColor: "#fff",
-    padding: 6,
-    borderRadius: 8,
+    bottom: 200,
+    left: 50,
+    width: 200,
+    backgroundColor: "#FFD1DC",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#D43C67",
+    zIndex: 20,
+    alignItems: "center"
   },
-  bubbleText: { fontFamily: "Jersey15", fontSize: 12, color: "#000" },
+  bubbleText: { fontSize: 18, fontWeight: "600", color: "#D43C67", textAlign: "center" },
+
+  // --- SIDEBAR / FAB (Original Styling) ---
   fabNav: {
     position: "absolute",
-    bottom: 50,
-    right: 20,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "#fff",
-    justifyContent: "center",
+    left: 0,
+    top: 210,
+    width: 40,
+    height: 72,
+    backgroundColor: "#FCE3CA",
     alignItems: "center",
+    justifyContent: "center",
+    zIndex: 15,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    borderWidth: 1,
+    borderColor: "#EDD3B8"
   },
   sidebar: {
     position: "absolute",
-    right: 0,
-    bottom: 100,
-    top: 0,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    borderTopLeftRadius: 20,
-    borderBottomLeftRadius: 20,
-    paddingVertical: 20,
-    paddingHorizontal: 10,
-  },
-  navRow: { gap: 15 },
-  navButton: {
+    left: 36,
+    top: 210,
+    height: 72,
+    backgroundColor: "#FFE9D1",
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    paddingHorizontal: 8,
+    zIndex: 19,
+    borderWidth: 1,
+    borderColor: "#EDD3B8"
   },
-  customIcon: { width: 30, height: 30 },
-  navLabel: { fontFamily: "Jersey15", fontSize: 14, color: "#333" },
-  editButton: {
+  navRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%"
+  },
+  navButton: {
+    flex: 1,
+    backgroundColor: "#FFEDD8",
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 6,
+    marginHorizontal: 3
+  },
+  navLabel: {
+    fontSize: 10,
+    color: "#8C6444",
+    textAlign: "center",
+    marginTop: 2,
+    lineHeight: 12,
+    fontWeight: "600"
+  },
+  customIcon: { width: 24, height: 24, resizeMode: "contain" },
+
+  // --- ACTION BUTTONS (Original Styling) ---
+  editButton: { position: "absolute", right: 22, bottom: 22, zIndex: 30 },
+  editLogo: { width: 48, height: 48, resizeMode: "contain" },
+  checkinButton: {
     position: "absolute",
-    bottom: 120,
     right: 20,
-    backgroundColor: "#fff",
-    padding: 10,
-    borderRadius: 20,
+    top: "50%",
+    transform: [{ translateY: -25 }],
+    zIndex: 50,
   },
-  editLogo: { width: 30, height: 30 },
-  checkinButton: { position: "absolute", bottom: 200, right: 25 },
-  checkinIcon: { width: 50, height: 50 },
-  questButton: { position: "absolute", bottom: 260, right: 25 },
-  questIcon: { width: 50, height: 50 },
+  checkinIcon: { width: 50, height: 50, resizeMode: "contain" },
+  questButton: {
+    position: "absolute",
+    right: 20,
+    top: "50%",
+    marginTop: 60,
+    zIndex: 50,
+  },
+  questIcon: { width: 45, height: 45, resizeMode: "contain" },
 });

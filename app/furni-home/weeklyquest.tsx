@@ -1,14 +1,14 @@
 import * as Font from "expo-font";
 import { useEffect, useRef, useState } from "react";
 import {
-    Image,
-    ImageSourcePropType,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View
+  Image,
+  ImageSourcePropType,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
 } from "react-native";
 
 type WeeklyQuestProps = {
@@ -34,6 +34,7 @@ export default function WeeklyQuestModal({
   const [checkedIds, setCheckedIds] = useState<number[]>([]);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [questOrder, setQuestOrder] = useState<QuestItem[]>([]);
+  const [currency, setCurrency] = useState(0); //currency
 
   const scrollRef = useRef<ScrollView>(null);
 
@@ -63,6 +64,10 @@ export default function WeeklyQuestModal({
     const completedQuest = questOrder.find(q => q.id === questId)!;
     const remaining = questOrder.filter(q => q.id !== questId);
     setQuestOrder([...remaining, completedQuest]);
+
+    // update the currency
+    const reward = parseInt(completedQuest.reward.replace("+", ""), 10);
+    setCurrency(prev => prev + reward);
 
     // 滑动到底部
     setTimeout(() => {
@@ -112,7 +117,7 @@ export default function WeeklyQuestModal({
                   <Text
                     style={[
                       styles.questText,
-                      { 
+                      {
                         fontFamily: "Jersey20",
                         textDecorationLine: checkedIds.includes(item.id) ? "line-through" : "none"
                       }
@@ -125,7 +130,7 @@ export default function WeeklyQuestModal({
                   <Text
                     style={[
                       styles.rewardText,
-                      { 
+                      {
                         fontFamily: "Jersey20",
                         textDecorationLine: checkedIds.includes(item.id) ? "line-through" : "none"
                       }
