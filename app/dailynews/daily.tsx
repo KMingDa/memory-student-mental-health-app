@@ -2,14 +2,15 @@ import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  Image,
-  Modal,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Image,
+    Modal,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 // ASSUMING PixelDialog is available in the relative path provided
@@ -31,7 +32,7 @@ interface Article {
     image: any;
 }
 
-// LOREM IPSUM CONTENT FOR THE BRAINCELLS ARTICLE
+// LOREM IPSUM CONTENT FOR THE BRAINCELLS ARTICLE (Unchanged)
 const braincellsArticleContent = {
     title: "There is More Than One Braincells in Human Brain?", 
     image: require("../../assets/images/zb1.jpg"), 
@@ -40,19 +41,19 @@ const braincellsArticleContent = {
         For centuries, scholars debated how humans managed to maintain sentient behavior while demonstrating inconsistent decision-making. Early theories proposed a solitary, overworked braincell controlling all neural processes. However, advancements in neuro-simulation and thoughtwave imaging have revealed a more complex system—one that thrives on internal disagreement.
         Initial scans indicate that human braincells specialize in different functions:
 
-         - Logic Cells: Handle problem-solving and reasoning (though occasionally absent).
+        - Logic Cells: Handle problem-solving and reasoning (though occasionally absent).
 
-         - Emotion Cells: Responsible for spontaneous decisions and dramatic flair.
+        - Emotion Cells: Responsible for spontaneous decisions and dramatic flair.
 
-         - Memory Cells: Store valuable data, but tend to misplace it under pressure.
+        - Memory Cells: Store valuable data, but tend to misplace it under pressure.
 
-         - Chaos Cells: Their purpose remains unknown, but they appear highly active during group discussions and midnight thoughts.
+        - Chaos Cells: Their purpose remains unknown, but they appear highly active during group discussions and midnight thoughts.
 
         Anaxa’s experimental replication of these dynamics in an artificial system led to mixed results—literally. While the system demonstrated creativity, it also began arguing with itself about snack preferences.
         These findings suggest that intelligence may not stem from singular precision but from the noisy collaboration of many imperfect contributors. The human brain, in its unpredictable brilliance, exemplifies organized disorder—something artificial cognition continues to struggle to imitate authentically.
         There is, indeed, more than one braincell in the human brain—though whether they cooperate is another question entirely. As Anaxa notes:
 
-        "True intelligence might just be several confused neurons agreeing to disagree."
+        “True intelligence might just be several confused neurons agreeing to disagree.”
     `,
 };
 
@@ -85,7 +86,6 @@ export default function DailyNews() {
                 "A research conducted by Prof. Anaxagoras showed that human intelligence may be influenced by the amount of braincells present in a person’s brain...",
             image: require("../../assets/images/zb1.jpg"),
         },
-        // ... rest of the articles 
         {
             id: "Vera's New Launch",
             image: require("../../assets/images/newprod.png"),
@@ -145,8 +145,10 @@ export default function DailyNews() {
     };
 
     return (
-        <View style={styles.container}>
-            {/* Header - Moved up using negative marginTop */}
+        <SafeAreaView style={styles.container}>
+            <View style={styles.topBar} />
+
+            {/* Header - Shows current date and profile icon */}
             <View style={styles.header}>
                 <Text style={styles.dateText}>{formattedDate}</Text>
                 <View style={styles.profileIcon}>
@@ -164,16 +166,18 @@ export default function DailyNews() {
                 <Text style={[styles.titleHeader, styles.news]}>NEWS</Text>
             </View>
 
-            <ScrollView contentContainerStyle={[styles.scrollContent, styles.scrollPadding]}>
-                {/* Row 1: Research Findings + stacked right column (Aligned Right) */}
+            {/* Added paddingBottom to the ScrollView to account for the bottom nav bar */}
+            <ScrollView contentContainerStyle={[styles.scrollContent, styles.scrollPadding, {paddingBottom: 110}]}> 
+                {/* Row 1: Research Findings + stacked right column */}
                 <View style={styles.row}>
                     
-                    {/* Left Card: Braincells (181 wide) */}
+                    {/* Left Card: Braincells (Entire card is now one TouchableOpacity) */}
                     <TouchableOpacity 
                         style={[styles.card, { width: 181, height: 313 }]} 
                         onPress={() => openModal(articles[0].id)}
                         activeOpacity={0.8}
                     >
+                        {/* Image and content */}
                         <Image
                             source={articles[0].image}
                             style={[styles.fullImage, { height: 180 }]}
@@ -192,6 +196,7 @@ export default function DailyNews() {
                             </ScrollView>
                         </View>
                         
+                        {/* Feedback Button */}
                         <TouchableOpacity
                             style={styles.leftFeedbackBtn}
                             onPress={() => openModal(articles[0].id)} 
@@ -201,7 +206,7 @@ export default function DailyNews() {
                     </TouchableOpacity>
 
 
-                    {/* Right Column: Two stacked ads (145 wide) */}
+                    {/* Right Column: Two stacked ads */}
                     <View style={[styles.column, { marginLeft: 20 }]}> 
                         <View style={[styles.card, { width: 145, height: 152 }]}>
                             <TouchableOpacity
@@ -232,7 +237,7 @@ export default function DailyNews() {
                     </View>
                 </View>
 
-                {/* Fact of the Day (Full Width) */}
+                {/* Fact of the Day */}
                 <View style={[styles.card, styles.factBox]}>
                     <TouchableOpacity
                         style={styles.leftFeedbackBtn}
@@ -244,11 +249,9 @@ export default function DailyNews() {
                     <Text style={styles.factBody}>{articles[3].body}</Text>
                 </View>
 
-                {/* Row 2: Ice Cream (90 wide) + Exercise (250 wide) - SIDE BY SIDE WITH SPACE */}
-                {/* --- EDITED: Row structure is now combined with "space-between" --- */}
-                <View style={[styles.row, { marginTop: 12, justifyContent: 'space-between' }]}>
-                    {/* Ice Cream Card (Left) */}
-                    <View style={[styles.card, { width: 90, height: 205, marginBottom: 0 }]}>
+                {/* Row 2: Ice Cream + Exercise */}
+                <View style={[styles.row, { marginTop: 12 }]}>
+                    <View style={[styles.card, { width: 86, height: 205 }]}>
                         <TouchableOpacity
                             style={styles.leftFeedbackBtn}
                             onPress={() => openModal("icecream")}
@@ -262,8 +265,7 @@ export default function DailyNews() {
                         />
                     </View>
 
-                    {/* Exercise Card (Right) */}
-                    <View style={[styles.card, { width: 250, height: 205, marginBottom: 0 }]}>
+                    <View style={[styles.card, { width: 250, height: 205 }]}>
                         <TouchableOpacity
                             style={styles.leftFeedbackBtn}
                             onPress={() => openModal("exercise")}
@@ -286,33 +288,41 @@ export default function DailyNews() {
                         </View>
                     </View>
                 </View>
-                {/* --- END EDITED ROW 2 --- */}
-                
             </ScrollView>
 
             <View style={styles.bottomBar} />
             
-            {/* --- Bottom Menu (Navigation) --- */}
-            <View style={styles.bottomMenu}>
-                <TouchableOpacity onPress={() => router.push('../furni-home/homesc')}>
-                    <Image source={assets.home} style={styles.icon} />
+            {/* 🚀 NEW BOTTOM NAVIGATION BAR */}
+            <View style={styles.bottomNav}>
+                <TouchableOpacity 
+                    style={styles.navItem} 
+                    onPress={() => router.push('../../furni-home/homesc')}
+                >
+                    <Image source={assets.home} style={styles.navImage} />
                 </TouchableOpacity>
         
-                <TouchableOpacity onPress={() => setShowDialog(true)}>
-                    <Image source={assets.bear} style={styles.icon} />
+                <TouchableOpacity 
+                    style={styles.navItem} 
+                    onPress={() => setShowDialog(true)}
+                >
+                    <Image source={assets.bear} style={styles.navImage} />
                 </TouchableOpacity>
         
-                <TouchableOpacity onPress={() => router.push('../../leaderboard/lead')}>
-                    <Image source={assets.trophy} style={styles.icon} />
+                <TouchableOpacity 
+                    style={styles.navItem} 
+                    onPress={() => router.push('../../leaderboard/lead')}
+                >
+                    <Image source={assets.trophy} style={styles.navImage} />
                 </TouchableOpacity>
         
-                <TouchableOpacity>
-                    <Image source={assets.settings} style={styles.icon} />
+                <TouchableOpacity style={styles.navItem}>
+                    <Image source={assets.settings} style={styles.navImage} />
                 </TouchableOpacity>
             </View>
+            
             <PixelDialog visible={showDialog} onClose={() => setShowDialog(false)} />
 
-            {/* --- NEW ARTICLE MODAL FOR BRAINCELLS NEWS --- */}
+            {/* --- MODALS (Unchanged) --- */}
             <Modal visible={showArticleModal} transparent animationType="slide">
                 <View style={styles.modalBg}>
                     <View style={[styles.modalBox, styles.articleModalBox]}>
@@ -324,7 +334,6 @@ export default function DailyNews() {
                                 style={styles.articleImage}
                                 resizeMode="cover"
                             />
-                            {/* Article text applied directly to Text component */}
                             <Text style={styles.articleText}>
                                 {braincellsArticleContent.fullText}
                             </Text>
@@ -340,7 +349,6 @@ export default function DailyNews() {
                 </View>
             </Modal>
             
-            {/* --- FEEDBACK MODAL (Original Modal) --- */}
             <Modal visible={modalVisible} transparent animationType="fade">
                 <View style={styles.modalBg}>
                     <View style={styles.modalBox}>
@@ -389,13 +397,14 @@ export default function DailyNews() {
                     </View>
                 </View>
             </Modal>
-        </View>
+        </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#d9f3ff" },
-    bottomBar: { backgroundColor: "#ffe4ec", height: 28 },
+    topBar: { backgroundColor: "#ffe4ec", height: 28 },
+    bottomBar: { backgroundColor: "#ffe4ec", height: 28 }, 
     
     // --- HEADER STYLES ---
     header: {
@@ -405,7 +414,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 15,
         backgroundColor: '#FFF5F5',
-        marginTop:30, 
+        marginTop: -30, 
     },
     dateText: {
         fontSize: 18,
@@ -434,11 +443,9 @@ const styles = StyleSheet.create({
     scrollContent: { paddingHorizontal: 12, paddingBottom: 16 },
     scrollPadding: { paddingBottom: 80 }, 
     
-    // Row 1: Aligned to the right
     row: { 
         flexDirection: "row", 
-        // Note: For Row 1, this is 'flex-end', for Row 2, we override to 'space-between' inline
-        justifyContent: "flex-end", 
+        justifyContent: "space-between", // Adjusted for proper spacing of Row 2
         marginBottom: 12 
     },
     
@@ -518,9 +525,8 @@ const styles = StyleSheet.create({
     articleTitle: {
         fontSize: 22,
         fontWeight: 'bold',
-        // Changed to left-aligned for better article reading flow
-        textAlign: 'left', 
-        paddingHorizontal: 16,
+        textAlign: 'center',
+        paddingHorizontal: 20,
         paddingTop: 20,
         paddingBottom: 10,
         color: '#333',
@@ -535,7 +541,6 @@ const styles = StyleSheet.create({
         lineHeight: 20,
         paddingHorizontal: 16,
         color: '#555',
-        // --- ADDED: Justification ---
         textAlign: 'justify',
     },
     articleCloseBtn: {
@@ -556,23 +561,28 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         fontSize: 16,
     },
-
-    // --- BOTTOM MENU STYLES ---
-    bottomMenu: {
-        flexDirection: "row",
-        justifyContent: "space-around",
-        width: "100%",
-        position: "absolute",
+    // --- NEW BOTTOM NAVIGATION BAR STYLES (INTEGRATED) ---
+    bottomNav: { 
+        flexDirection: 'row', 
+        backgroundColor: '#fff', 
+        paddingVertical: 15, 
+        paddingHorizontal: 20, 
+        justifyContent: 'space-around', 
+        borderTopWidth: 1, 
+        borderTopColor: '#E0E0E0', 
+        marginBottom: 0, 
+        width: '100%', 
+        position: 'absolute', 
         bottom: 0,
-        paddingVertical: 10,
-        borderTopWidth: 1,
-        borderColor: "#ccc",
-        backgroundColor: "#fff",
-        zIndex: 50,
+        zIndex: 50, // Ensures visibility
     },
-    icon: {
-        width: 40,
-        height: 40,
-        resizeMode: "contain",
+    navItem: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    navImage: {
+        width: 48,
+        height: 48,
+        resizeMode: 'contain',
     },
 });
