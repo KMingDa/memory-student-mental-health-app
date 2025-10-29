@@ -1,13 +1,13 @@
 import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
 import {
-    Image,
-    SafeAreaView,
-    StatusBar,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  SafeAreaView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function AddExpensePage() {
@@ -15,6 +15,7 @@ export default function AddExpensePage() {
 
   const [fontsLoaded] = useFonts({
     'PressStart2P-Regular': require('../../assets/fonts/PressStart2P-Regular.ttf'),
+    'Jersey15': require('../../assets/fonts/Jersey15-Regular.ttf'),
   });
 
   if (!fontsLoaded) {
@@ -60,7 +61,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20, paddingVertical: 15, backgroundColor: '#F8BBD9', marginTop: 40,
   },
   backButton: { fontSize: 12, fontFamily: 'PressStart2P-Regular', color: '#000' },
-  dateText: { color: '#000', fontSize: 16, fontFamily: 'PressStart2P-Regular' },
+  dateText: { color: '#000', fontSize: 16, fontFamily: 'Jersey15' },
   profileIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center' },
   mainContainer: { flex: 1, padding: 20 },
   title: { fontSize: 20, fontFamily: 'PressStart2P-Regular', color: '#000', textAlign: 'center', marginBottom: 20 },

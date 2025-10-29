@@ -24,6 +24,7 @@ export default function AddBudgetPage() {
 
   const [fontsLoaded] = useFonts({
     'PressStart2P-Regular': require('../../assets/fonts/PressStart2P-Regular.ttf'),
+    'Jersey15': require('../../assets/fonts/Jersey15-Regular.ttf'),
   });
 
   if (!fontsLoaded) {
@@ -210,7 +211,7 @@ const styles = StyleSheet.create({
   dateText: { 
     color: '#000', 
     fontSize: 16, 
-    fontFamily: 'PressStart2P-Regular' 
+    fontFamily: 'Jersey15' 
   },
   profileIcon: { 
     width: 40, 
