@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
     },
     dateText: { 
         color: '#000', 
-        fontSize: 16, 
+        fontSize: 12, 
         fontWeight: '600', 
         fontFamily: 'PressStart2P' 
     },
