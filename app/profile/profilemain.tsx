@@ -52,47 +52,61 @@ const AVAILABLE_TITLES = [
     { title: "Star Seeker", color: "#e6ccff" },
 ];
 
-// --- ARCHIMEDES IS THE TIER TITLE, which should NOT be in the editable list ---
+// --- ACHIEVEMENT TIER (Read-Only Default) ---
 const ACHIEVEMENT_TITLE = "Archimedes";
 
 
 export default function ProfileMain() {
     const router = useRouter();
-    const [userName, setUserName] = useState("Misa"); 
-    const [currentRole, setCurrentRole] = useState("Newbie Tester");
     
+    // States for Name (Editable)
+    const [userName, setUserName] = useState("Misa"); 
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempUserName, setTempUserName] = useState("Misa");
 
-    const [currentTitle, setCurrentTitle] = useState(ACHIEVEMENT_TITLE); // Use constant
+    // States for Role/Status (Editable via Modal)
+    const [currentRole, setCurrentRole] = useState("Newbie Tester");
+    
+    // States for Achievement Title (Read-Only Tier)
+    const [currentTitle, setCurrentTitle] = useState(ACHIEVEMENT_TITLE);
     const [showTitleModal, setShowTitleModal] = useState(false);
+    
+    // Dialog State
     const [showDialog, setShowDialog] = useState(false); 
 
     const [fontsLoaded] = useFonts({
         jersey15: require("../../assets/fonts/Jersey15-Regular.ttf"),
     });
 
+    // ******************************************************
+    // 💾 ASYNC STORAGE LOAD LOGIC
+    // ******************************************************
     useFocusEffect(
         React.useCallback(() => {
             const loadUserData = async () => {
                 try {
+                    // 1. LOAD NAME
                     const storedName = await AsyncStorage.getItem("currentUserName");
-                    const storedRole = await AsyncStorage.getItem("currentRole");
-                    let storedTitle = await AsyncStorage.getItem("currentTitle"); 
-
                     if (storedName) {
                         setUserName(storedName);
                         setTempUserName(storedName);
                     } else {
-                        setUserName("Guest");
-                        setTempUserName("Guest");
+                        setUserName("Misa");
+                        setTempUserName("Misa");
                     }
 
+                    // 2. LOAD ROLE/STATUS (The editable field)
+                    const storedRole = await AsyncStorage.getItem("currentRole");
                     if (storedRole) {
                         setCurrentRole(storedRole);
+                    } else {
+                         setCurrentRole("Newbie Tester"); 
                     }
                     
-                    // 📢 FIX 1: Overwrite achievement title if it was accidentally set to an editable role.
+                    // 3. LOAD ACHIEVEMENT TIER (Read-Only)
+                    let storedTitle = await AsyncStorage.getItem("currentTitle"); 
+                    
+                    // Defense mechanism: If title is null or accidentally set to an editable role, reset it.
                     if (!storedTitle || AVAILABLE_TITLES.some(t => t.title === storedTitle)) {
                          storedTitle = ACHIEVEMENT_TITLE;
                          await AsyncStorage.setItem("currentTitle", ACHIEVEMENT_TITLE);
@@ -106,20 +120,24 @@ export default function ProfileMain() {
             loadUserData();
         }, [])
     );
+    // ******************************************************
 
+    // 💾 FUNCTION: Save Name (Now triggers on button press or submit)
     const handleSaveName = async () => {
         if (tempUserName.trim()) {
             setUserName(tempUserName.trim());
-            await AsyncStorage.setItem("currentUserName", tempUserName.trim());
+            await AsyncStorage.setItem("currentUserName", tempUserName.trim()); // ✅ SAVING NAME
         } else {
+            // Revert tempUserName to actual userName if input was empty
             setTempUserName(userName);
         }
         setIsEditingName(false);
     };
 
+    // 💾 FUNCTION: Select Role (Updates the editable status field)
     const handleRoleSelect = async (role: string) => {
         setCurrentRole(role);
-        await AsyncStorage.setItem("currentRole", role); 
+        await AsyncStorage.setItem("currentRole", role); // ✅ SAVING ROLE/STATUS
         setShowTitleModal(false);
     };
 
@@ -138,11 +156,10 @@ export default function ProfileMain() {
                                     {/* Name Display / Edit Input */}
                                     {isEditingName ? (
                                         <TextInput
-                                            style={[styles.nameInput, styles.name]}
+                                            style={[styles.nameInput, styles.name, {fontFamily: 'jersey15'}]} 
                                             value={tempUserName}
                                             onChangeText={setTempUserName}
-                                            onBlur={handleSaveName}
-                                            onSubmitEditing={handleSaveName}
+                                            onSubmitEditing={handleSaveName} // Saves on keyboard 'Done'
                                             autoFocus
                                             placeholder="Enter Name"
                                         />
@@ -151,14 +168,18 @@ export default function ProfileMain() {
                                     )}
                                     {/* Edit Name Button */}
                                     <TouchableOpacity onPress={() => {
-                                        setIsEditingName(p => !p);
-                                        if (isEditingName) handleSaveName(); 
+                                        if (isEditingName) {
+                                            // 💡 ACTION: Explicitly call save when pressing the button to exit edit mode
+                                            handleSaveName(); 
+                                        } else {
+                                            setIsEditingName(true);
+                                        }
                                     }}>
                                         <Image source={assets.edit} style={styles.editIcon} />
                                     </TouchableOpacity>
                                 </View>
                                 
-                                {/* ROLE DISPLAY / EDIT INPUT: Clicking opens the Title Selection Modal */}
+                                {/* 📢 ROLE DISPLAY / EDIT INPUT: Clicking opens the Title Selection Modal */}
                                 <TouchableOpacity 
                                     onPress={() => setShowTitleModal(true)} 
                                     style={styles.roleContainer}
@@ -187,7 +208,7 @@ export default function ProfileMain() {
                                 <Text style={styles.statText}>1500</Text>
                             </View>
                         </View>
-                        {/* 📢 CURRENT TIER DISPLAY (Read-only achievement tier) */}
+                        {/* CURRENT TIER DISPLAY (Read-only achievement tier) */}
                         <View style={styles.tierContainer}> 
                             <Text style={styles.tierText}>
                                 Current Tier: <Text style={styles.italic}>{currentTitle}</Text>
@@ -281,7 +302,6 @@ export default function ProfileMain() {
                                                 style={[
                                                     styles.titleBadge, 
                                                     { backgroundColor: item.color, flexBasis: '100%', margin: 0 },
-                                                    // Highlight current ROLE
                                                     currentRole === item.title && styles.selectedTitleBadge,
                                                 ]}
                                             >
@@ -329,6 +349,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 4,
         paddingVertical: 2,
         minWidth: 100 * SCALE, 
+        fontFamily: "jersey15", 
     },
     
     card: {
