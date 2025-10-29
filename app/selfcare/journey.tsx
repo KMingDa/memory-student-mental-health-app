@@ -522,9 +522,9 @@ const styles = StyleSheet.create({
     },
     dateText: { 
         color: '#000', 
-        fontSize: 12, 
+        fontSize: 18, 
         fontWeight: '600', 
-        fontFamily: 'PressStart2P-Regular' // Corrected font name based on other samples
+        fontFamily: 'Jersey15' // Corrected font name based on other samples
     },
     profileIcon: { 
         width: 40, 

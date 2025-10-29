@@ -13,6 +13,13 @@ import {
     View,
 } from "react-native";
 
+// --- GLOBAL ASSET PATHS (For new nav bar) ---
+const HOME_ICON = require("../../assets/images/home.png"); 
+const BEAR_ICON = require("../../assets/images/bear.png");
+const TROPHY_ICON = require("../../assets/images/trophy.png");
+const SETTINGS_ICON = require("../../assets/images/settings.png");
+// ---
+
 // --- Types ---
 interface LeaderboardEntry {
     id: string;
@@ -22,7 +29,7 @@ interface LeaderboardEntry {
     rank?: number;
 }
 
-// --- Sample Data (Global remains constant) ---
+// --- Sample Data ---
 const globalLeaderboard: LeaderboardEntry[] = [
     { id: "1", name: "Cerydra", coins: 59000 },
     { id: "2", name: "Hysilens", coins: 40000 },
@@ -35,7 +42,6 @@ const globalLeaderboard: LeaderboardEntry[] = [
     { id: "9", name: "Cyrene", coins: 19888 },
 ];
 
-// --- Base Local Data ---
 const baseLocalLeaderboard: LeaderboardEntry[] = [
     { id: "1", name: "Zandar", coins: 5600 },
     { id: "2", name: "Polka", coins: 5400 },
@@ -45,8 +51,24 @@ const baseLocalLeaderboard: LeaderboardEntry[] = [
     { id: "6", name: "Dolisu", coins: 4000 },
     { id: "7", name: "Shinami", coins: 3000 },
     { id: "8", name: "Silk", coins: 2000 },
-    { id: "9", name: "Misa", coins: 1500 }, // Placeholder
+    { id: "9", name: "Misa", coins: 1500 }, 
 ];
+
+// --- Local Dialog Component (Placeholder for Bear Dialog) ---
+const LocalPixelDialog = ({ visible, onClose }: { visible: boolean, onClose: () => void }) => {
+    if (!visible) return null;
+    return (
+        <View style={styles.modalBackground}>
+            <View style={styles.modalBox}>
+                <Text style={styles.modalTitle}>Bear Dialog Placeholder</Text> 
+                <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+                    <Text style={styles.closeText}>Close</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+};
+
 
 // --- Components ---
 const LeaderboardItem = ({
@@ -88,6 +110,7 @@ export default function LeaderboardScreen() {
 
     const [fontsLoaded] = useFonts({
         Jersey20: require("../../assets/fonts/Jersey20-Regular.ttf"),
+        Jersey15: require("@/assets/fonts/Jersey15-Regular.ttf"), 
     });
 
     useFocusEffect(
@@ -130,8 +153,19 @@ export default function LeaderboardScreen() {
 
     return (
         <SafeAreaView style={styles.container}>
-            <Text style={styles.date}>{currentDateString}</Text>
+            {/* Standardized Header */}
+            <View style={styles.headerBar}>
+                <Text style={styles.dateText}>{currentDateString}</Text>
+                <View style={styles.profileIcon}>
+                    <Image
+                        source={require("../../assets/images/misahead.png")}
+                        style={styles.avatar}
+                        resizeMode="cover"
+                    />
+                </View>
+            </View>
 
+            {/* Leaderboard Title/Toggle Area */}
             <View style={styles.header}>
                 <Text style={styles.headerText}>
                     {tab === "global" ? "Global Leaderboard" : "Local Leaderboard"}
@@ -150,17 +184,22 @@ export default function LeaderboardScreen() {
                 </View>
             )}
 
-            <TouchableOpacity
-                style={styles.boardBox}
-                onPress={() => setTab(tab === "global" ? "local" : "global")}
-            >
-                <View style={[styles.row, styles.headerRow]}>
-                    <Text style={[styles.rank, styles.headerCol]}>Pos.</Text>
-                    <Text style={[styles.name, styles.headerCol]}>Name</Text>
-                    <Text style={[styles.coins, styles.headerCol]}>Coins Obtained</Text>
-                </View>
+            {/* Main Leaderboard Box - Now uses View instead of TouchableOpacity for scrolling */}
+            <View style={styles.boardContainer}> 
+                <TouchableOpacity
+                    style={styles.boardHeaderButton} // New style for the header row/button
+                    onPress={() => setTab(tab === "global" ? "local" : "global")}
+                >
+                    <View style={[styles.row, styles.headerRow, styles.boardHeaderRow]}>
+                        <Text style={[styles.rank, styles.headerCol]}>Pos.</Text>
+                        <Text style={[styles.name, styles.headerCol]}>Name</Text>
+                        <Text style={[styles.coins, styles.headerCol]}>Coins Obtained</Text>
+                    </View>
+                </TouchableOpacity>
 
                 <FlatList
+                    style={styles.flatList} // Enables scrolling within the defined space
+                    contentContainerStyle={styles.flatListContent}
                     data={leaderboardData}
                     renderItem={({ item, index }) => (
                         <LeaderboardItem
@@ -170,13 +209,14 @@ export default function LeaderboardScreen() {
                         />
                     )}
                     keyExtractor={(item) => item.id}
+                    // ListFooterComponent is used for the current user in GLOBAL tab
                     ListFooterComponent={
                         tab === "global" ? <CurrentUserRow user={currentUser} /> : null
                     }
                 />
-            </TouchableOpacity>
+            </View>
 
-            {/* About Modal */}
+            {/* About Modal (Unchanged) */}
             <Modal
                 animationType="fade"
                 transparent
@@ -205,55 +245,114 @@ export default function LeaderboardScreen() {
                 </View>
             </Modal>
 
-            {/* --- Bottom Menu --- */}
-            <View style={styles.bottomMenu}>
-                <TouchableOpacity onPress={() => router.push("../furni-home/homesc")}>
-                    <Image
-                        source={require("../../assets/images/home.png")}
-                        style={styles.icon}
-                    />
+            {/* 🚀 STANDARDIZED BOTTOM NAVIGATION BAR */}
+            <View style={styles.bottomNav}>
+                <TouchableOpacity 
+                    style={styles.navItem} 
+                    onPress={() => router.push('../furni-home/homesc')}
+                >
+                    <Image source={HOME_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => setShowDialog(true)}>
-                    <Image
-                        source={require("../../assets/images/bear.png")}
-                        style={styles.icon}
-                    />
+        
+                <TouchableOpacity 
+                    style={styles.navItem} 
+                    onPress={() => setShowDialog(true)}
+                >
+                    <Image source={BEAR_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-
-                <TouchableOpacity onPress={() => router.push("../../leaderboard/lead")}>
-                    <Image
-                        source={require("../../assets/images/trophy.png")}
-                        style={styles.icon}
-                    />
+        
+                <TouchableOpacity 
+                    style={styles.navItem} 
+                    onPress={() => router.push('../../leaderboard/lead')}
+                >
+                    <Image source={TROPHY_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-
-                <TouchableOpacity>
-                    <Image
-                        source={require("../../assets/images/settings.png")}
-                        style={styles.icon}
-                    />
+        
+                <TouchableOpacity style={styles.navItem}>
+                    <Image source={SETTINGS_ICON} style={styles.navImage} />
                 </TouchableOpacity>
             </View>
+            <LocalPixelDialog visible={showDialog} onClose={() => setShowDialog(false)} />
         </SafeAreaView>
     );
 }
 
 // --- Styles ---
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#e6dcf6", padding: 12 },
+    container: { flex: 1, backgroundColor: "#e6dcf6", padding: 0 },
     date: { textAlign: "left", fontSize: 20, fontFamily: "Jersey20", marginBottom: 12, color: "#222" },
-    header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 },
-    headerText: { fontSize: 40, fontFamily: "Jersey20", color: "#222", textAlign: "center", flex: 1 },
-    infoBtn: { fontWeight: "700", fontSize: 14, backgroundColor: "#e6dcf6", paddingHorizontal: 10, paddingVertical: 2, borderRadius: 8, fontFamily: "Jersey20" },
+    
+    // 💡 NEW STANDARDIZED HEADER STYLES
+    headerBar: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        backgroundColor: '#FFF5F5',
+        width: '100%',
+    },
+    dateText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#333',
+        fontFamily: 'Jersey15', 
+    },
+    profileIcon: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#FFE4EC',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    avatar: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
+    },
+    // ------------------------------------
+
+    // 📢 Leaderboard Title Area
+    header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8, paddingHorizontal: 12, paddingTop: 10 },
+    headerText: { fontSize: 28, fontFamily: "Jersey20", color: "#222", textAlign: "center", flex: 1 }, 
+    infoBtn: { fontWeight: "700", fontSize: 14, backgroundColor: "#d9c6f2", paddingHorizontal: 10, paddingVertical: 2, borderRadius: 8, fontFamily: "Jersey20" },
     tierRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 8, columnGap: 6 },
     tierLabel: { fontFamily: "Jersey20", fontSize: 20 },
     tierBox: { backgroundColor: "#c8f5d1ff", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 },
     tierText: { fontFamily: "Jersey20", color: "#000000ff" },
-    boardBox: { flex: 1, backgroundColor: "#d9c6f2", borderRadius: 15, padding: 8 },
+
+    // 💡 SCROLLING FIX: New container for flex control
+    boardContainer: {
+        flex: 1, // Takes up remaining vertical space
+        backgroundColor: "#d9c6f2", 
+        borderRadius: 15, 
+        padding: 8, 
+        marginHorizontal: 12, // Added margin for spacing
+        marginBottom: 78, // Space for the bottomNav (approx height of nav bar)
+    },
+    boardHeaderButton: {
+        // Allows the header to be clickable without forcing the FlatList to be unscrollable
+        marginBottom: 6,
+    },
+    flatList: {
+        flex: 1, // Allows FlatList to scroll within boardContainer
+        backgroundColor: '#d9c6f2',
+    },
+    flatListContent: {
+        paddingBottom: 20, // Extra padding at the bottom of the list content
+    },
+    // Original styles kept for row visuals
+    boardBox: { // <-- RETAINED but only for color/border/padding of the overall visual container
+        // Original style moved to boardContainer for flex behavior
+    },
     row: { flexDirection: "row", justifyContent: "space-between", backgroundColor: "#e6dcf6", paddingVertical: 14, paddingHorizontal: 12, borderRadius: 10, marginVertical: 4, columnGap: 20 },
+    
+    // Header Row Fix:
     headerRow: { backgroundColor: "#bda6e6", marginBottom: 6 },
+    boardHeaderRow: { marginBottom: 0 }, // Removed margin from actual header row
     headerCol: { color: "#fff", fontWeight: "600" },
+
     highlightRow: { backgroundColor: "#FFE3E3" },
     currentUserRow: { flexDirection: "row", justifyContent: "space-between", backgroundColor: "#f1e6ff", paddingVertical: 14, paddingHorizontal: 12, borderRadius: 10, marginTop: 10, borderWidth: 1.5, borderColor: "#9c7ed7", columnGap: 20 },
     rank: { fontFamily: "Jersey20", flex: 1, textAlign: "center", color: "#222" },
@@ -265,6 +364,29 @@ const styles = StyleSheet.create({
     modalText: { fontSize: 14, fontFamily: "Jersey20", marginBottom: 20, lineHeight: 20 },
     closeBtn: { backgroundColor: "#d9c6f2", padding: 10, borderRadius: 8, alignItems: "center" },
     closeText: { fontFamily: "Jersey20" },
-    bottomMenu: { flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingVertical: 12 },
-    icon: { width: 40, height: 40, resizeMode: "contain" },
+
+    // 💡 STANDARDIZED BOTTOM NAVIGATION BAR STYLES
+    bottomNav: { 
+        flexDirection: 'row', 
+        backgroundColor: '#fff', 
+        paddingVertical: 15, 
+        paddingHorizontal: 20, 
+        justifyContent: 'space-around', 
+        borderTopWidth: 1, 
+        borderTopColor: '#E0E0E0', 
+        marginBottom: 0, // Set to 0 to sit exactly at the bottom of the screen
+        width: '100%', 
+        position: 'absolute', 
+        bottom: 0,
+        zIndex: 50, 
+    },
+    navItem: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    navImage: {
+        width: 48,
+        height: 48,
+        resizeMode: 'contain',
+    },
 });
