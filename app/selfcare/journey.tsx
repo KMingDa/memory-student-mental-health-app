@@ -2,7 +2,7 @@ import Slider from "@react-native-community/slider";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Audio } from 'expo-av';
 import { useFonts } from "expo-font";
-import { createContext, useCallback, useContext, useEffect, useState } from "react"; // <-- useCallback ADDED
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {
   Dimensions,
   FlatList,
@@ -19,6 +19,7 @@ import {
 const { width } = Dimensions.get("window");
 
 // --- LOCAL IMAGE ASSETS ---
+// Note: Assuming these assets are correctly located relative to this file
 const AVATAR = require("../../assets/images/misahead.png"); 
 const HOME_ICON = require('@/assets/images/home.png');
 const BEAR_ICON = require('@/assets/images/bear.png');
@@ -149,25 +150,20 @@ const PlaybackProvider = ({ children }: { children: React.ReactNode }) => {
             console.error('Error loading audio:', error);
             setCurrentTrack({ ...track, playing: false, id: track.id });
         }
-    }, [sound]); // Dependency on sound ensures it uses the latest object
+    }, [sound]); 
     
-    // 📢 FIX: Using useCallback to ensure togglePlay always has the correct scope and dependencies
     const togglePlay = useCallback(async () => {
         if (!sound) {
-            // If sound isn't loaded, load the current track and play it
             return loadAndPlayTrack(currentTrack);
         }
 
         if (currentTrack.playing) {
-            // Pause the music
             await sound.pauseAsync();
         } else {
-            // Play the music
             await sound.playAsync();
         }
-        // Use a function update to correctly toggle the playing status
         setCurrentTrack(t => ({ ...t, playing: !t.playing }));
-    }, [sound, currentTrack.playing, currentTrack]); // Dependencies ensure logic is fresh
+    }, [sound, currentTrack.playing, currentTrack]); 
     
     const handleTrackSelect = useCallback((track: Track) => {
         if (track.id !== currentTrack.id || !currentTrack.playing) {
@@ -193,7 +189,7 @@ const usePlayback = () => {
     return context;
 };
 // ************************************************************
-// 🎧 2. COMPONENTS (UPDATED TO USE CONTEXT)
+// 🎧 2. COMPONENTS (UPDATED TO USE CONTEXT AND NEW NAV)
 // ************************************************************
 
 // --- CustomHeader and other utility components remain unchanged ---
@@ -241,10 +237,27 @@ const FilterChips = () => {
     );
 };
 
+// --- Custom Pixel Dialog (Placeholder) ---
+// Assuming PixelDialog is a separate component for the bear popup
+const PixelDialog = ({ visible, onClose }: { visible: boolean, onClose: () => void }) => {
+    if (!visible) return null;
+    return (
+        <View style={styles.dialogOverlay}>
+            <View style={styles.dialogContent}>
+                <Text style={styles.dialogText}>Pixel Dialog Placeholder</Text>
+                <TouchableOpacity onPress={onClose} style={styles.dialogButton}>
+                    <Text style={styles.dialogButtonText}>Close</Text>
+                </TouchableOpacity>
+            </View>
+        </View>
+    );
+};
+
 
 // --- HOME SCREEN (Now uses usePlayback hook) ---
 function HomeScreen({ navigation }: any) {
     const { currentTrack, togglePlay, handleTrackSelect } = usePlayback(); 
+    const [showDialog, setShowDialog] = useState(false); // State for the new bear button dialog
 
     const [fontsLoaded] = useFonts({
         "Jersey20-Regular": require("../../assets/fonts/Jersey20-Regular.ttf"),
@@ -272,7 +285,8 @@ function HomeScreen({ navigation }: any) {
             <SearchBar />
             <FilterChips />
 
-            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 140 }}>
+            {/* Added paddingBottom to the ScrollView to account for both mini-player and bottom nav */}
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 180 }}> 
                 {/* TOP Lofi Music */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>TOP Lofi Music</Text>
@@ -325,9 +339,9 @@ function HomeScreen({ navigation }: any) {
                 </View>
             </ScrollView>
 
-            {/* MINI PLAYER (Uses context's state and togglePlay) */}
+            {/* MINI PLAYER: PUSHED UP to clear the bottom nav bar */}
             <TouchableOpacity
-                style={[styles.miniPlayer, { bottom: 60 }]}
+                style={styles.miniPlayer} // Removed local bottom: 60, using style sheet
                 onPress={() => openDetail(currentTrack)}
             >
                 <Image source={currentTrack.image} style={styles.miniThumb} resizeMode="cover" />
@@ -343,23 +357,38 @@ function HomeScreen({ navigation }: any) {
                 </TouchableOpacity>
             </TouchableOpacity>
 
-            {/* Bottom Menu */}
-            <View style={styles.bottomMenu}>
-                <Image source={HOME_ICON} style={styles.icon} />
-                <Image source={BEAR_ICON} style={styles.icon} />
-                <Image source={TROPHY_ICON} style={styles.icon} />
-                <Image source={SETTINGS_ICON} style={styles.icon} />
+            {/* 🔄 NEW BOTTOM NAVIGATION */}
+            <View style={styles.bottomNav}>
+                {/* Mapping Expo Router paths to React Navigation (Home is current screen) 
+                Note: 'furni-home/homesc' and 'leaderboard/lead' are mapped to existing stack screens
+                */}
+                <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
+                    <Image source={HOME_ICON} style={styles.navImage} />
+                </TouchableOpacity>
+        
+                <TouchableOpacity style={styles.navItem} onPress={() => setShowDialog(true)}>
+                    <Image source={BEAR_ICON} style={styles.navImage} />
+                </TouchableOpacity>
+        
+                <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PlayerDetail')}>
+                    <Image source={TROPHY_ICON} style={styles.navImage} />
+                </TouchableOpacity>
+        
+                <TouchableOpacity style={styles.navItem}>
+                    <Image source={SETTINGS_ICON} style={styles.navImage} />
+                </TouchableOpacity>
             </View>
+
+            <PixelDialog visible={showDialog} onClose={() => setShowDialog(false)} />
         </SafeAreaView>
     );
 }
 
 // --- PLAYER DETAIL SCREEN (FIXED FOR SYNC) ---
 function PlayerDetail({ navigation }: any) {
-    // Retrieve current track state AND control function from context
     const { currentTrack, togglePlay } = usePlayback();
+    const [showDialog, setShowDialog] = useState(false); 
     
-    // We only need local state for the visual slider (progress bar)
     const [progress, setProgress] = useState(currentTrack.progress); 
 
     const [fontsLoaded] = useFonts({
@@ -368,7 +397,6 @@ function PlayerDetail({ navigation }: any) {
         "PressStart2P": require("@/assets/fonts/PressStart2P-Regular.ttf"), 
     });
     
-    // Ensure the local progress state updates if the track changes
     useEffect(() => {
         setProgress(currentTrack.progress);
     }, [currentTrack.id, currentTrack.progress]);
@@ -411,7 +439,7 @@ function PlayerDetail({ navigation }: any) {
                 <View style={styles.controlRow}>
                     <TouchableOpacity><Image source={ARROW} style={styles.controlIcon} /></TouchableOpacity>
                     <TouchableOpacity><Image source={PREVIOUS} style={styles.controlIcon} /></TouchableOpacity>
-                    {/* 💡 SYNCHRONIZED: This calls the reliable context togglePlay function */}
+                    {/* SYNCHRONIZED */}
                     <TouchableOpacity onPress={togglePlay}> 
                         <Image 
                             source={currentTrack.playing ? PAUSE : PLAY} 
@@ -432,13 +460,26 @@ function PlayerDetail({ navigation }: any) {
                 </View>
             </ScrollView>
 
-            {/* Bottom Menu */}
-            <View style={styles.bottomMenu}>
-                <Image source={HOME_ICON} style={styles.icon} />
-                <Image source={BEAR_ICON} style={styles.icon} />
-                <Image source={TROPHY_ICON} style={styles.icon} />
-                <Image source={SETTINGS_ICON} style={styles.icon} />
+            {/* 🔄 NEW BOTTOM NAVIGATION */}
+            <View style={styles.bottomNav}>
+                <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
+                    <Image source={HOME_ICON} style={styles.navImage} />
+                </TouchableOpacity>
+        
+                <TouchableOpacity style={styles.navItem} onPress={() => setShowDialog(true)}>
+                    <Image source={BEAR_ICON} style={styles.navImage} />
+                </TouchableOpacity>
+        
+                <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PlayerDetail')}>
+                    <Image source={TROPHY_ICON} style={styles.navImage} />
+                </TouchableOpacity>
+        
+                <TouchableOpacity style={styles.navItem}>
+                    <Image source={SETTINGS_ICON} style={styles.navImage} />
+                </TouchableOpacity>
             </View>
+
+            <PixelDialog visible={showDialog} onClose={() => setShowDialog(false)} />
         </SafeAreaView>
     );
 }
@@ -458,9 +499,17 @@ export default function JourneyStack() {
     );
 }
 
-// --- STYLES (Unchanged) ---
+// --- STYLES (UPDATED for new Bottom Nav and Mini-Player positioning) ---
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#DFF6F9" },
+    
+    // Dialog styles (Placeholder)
+    dialogOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 50 },
+    dialogContent: { padding: 20, backgroundColor: 'white', borderRadius: 10, width: '80%', alignItems: 'center' },
+    dialogText: { fontSize: 18, marginBottom: 20 },
+    dialogButton: { marginTop: 10, padding: 10, backgroundColor: '#BEEAF0', borderRadius: 5 },
+    dialogButtonText: { color: '#2E6F79' },
+
     // --- EDITED HEADER STYLES ---
     header: { 
         flexDirection: 'row', 
@@ -475,7 +524,7 @@ const styles = StyleSheet.create({
         color: '#000', 
         fontSize: 12, 
         fontWeight: '600', 
-        fontFamily: 'PressStart2P' 
+        fontFamily: 'PressStart2P-Regular' // Corrected font name based on other samples
     },
     profileIcon: { 
         width: 40, 
@@ -518,14 +567,51 @@ const styles = StyleSheet.create({
     bgmImage: { width: "100%", height: 100, borderRadius: 6 },
     bgmText: { padding: 8, fontWeight: "600", fontFamily: "Jersey20-Regular" },
 
-    miniPlayer: { position: "absolute", width: "100%", height: 64, backgroundColor: "#a4d1d2ff", borderRadius: 0, padding: 8, flexDirection: "row", alignItems: "center", elevation: 8, zIndex: 20, bottom: 60 },
+    // 💡 MINI PLAYER STYLE ADJUSTED: Pushed up by calculating the bottom nav height (~78px) + -30 marginBottom
+    // 78 (nav height) + 64 (miniplayer height) + 15 (padding) = ~157px total space needed
+    // Setting bottom: 100 will move it up past the nav bar.
+    miniPlayer: { 
+        position: "absolute", 
+        width: "100%", 
+        height: 64, 
+        backgroundColor: "#a4d1d2ff", 
+        borderRadius: 0, 
+        padding: 8, 
+        flexDirection: "row", 
+        alignItems: "center", 
+        elevation: 8, 
+        zIndex: 20, 
+        bottom: 80, // <-- PUSHED UP
+    },
     miniThumb: { width: 48, height: 48, borderRadius: 6 },
     miniTitle: { fontWeight: "700", fontFamily: "Jersey20-Regular" },
     miniArtist: { fontSize: 12, color: "#333", fontFamily: "Jersey20-Regular" },
     playButton: { width: 60, height: 60, borderRadius: 30, alignItems: "center", justifyContent: "center" },
 
-    bottomMenu: { flexDirection: "row", justifyContent: "space-around", width: "100%", position: "absolute", bottom: 0, paddingVertical: 10, borderTopWidth: 1, borderColor: "#ffffff", backgroundColor: "#fff", zIndex: 10 },
-    icon: { width: 32, height: 32, resizeMode: "contain" },
+    // 💡 NEW BOTTOM NAVIGATION STYLES (FROM USER SNIPPET)
+    bottomNav: { 
+        flexDirection: 'row', 
+        backgroundColor: '#fff', 
+        paddingVertical: 15, 
+        paddingHorizontal: 20, 
+        justifyContent: 'space-around', 
+        borderTopWidth: 1, 
+        borderTopColor: '#E0E0E0', 
+        marginBottom: 2, // Retaining the negative margin as requested
+        width: '100%', 
+        position: 'absolute', 
+        bottom: 0,
+        zIndex: 10 
+    },
+    navItem: {
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    navImage: {
+        width: 48,
+        height: 48,
+        resizeMode: 'contain',
+    },
 
     largeArt: { width: 300, height: 300, borderRadius: 12, alignSelf: "center", marginTop: 40 },
     detailTitle: { fontSize: 18, fontWeight: "800", marginTop: 12, fontFamily: "Jersey20-Regular" },
