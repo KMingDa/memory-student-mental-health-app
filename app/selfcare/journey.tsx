@@ -1,7 +1,8 @@
 import Slider from "@react-native-community/slider";
 import { createStackNavigator } from "@react-navigation/stack";
+import { Audio } from 'expo-av';
 import { useFonts } from "expo-font";
-import { useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react"; // <-- useCallback ADDED
 import {
   Dimensions,
   FlatList,
@@ -46,6 +47,9 @@ const ADVANCE = require("../../assets/images/advance.png");
 const REPEAT = require("../../assets/images/repeat.png");
 const DOWN = require("../../assets/images/down.png");
 
+// --- NEW AUDIO ASSET ---
+const SAMPLE_AUDIO = require("../../assets/audio/sample.mp3");
+
 // --- TYPES ---
 type Track = {
     id: string;
@@ -54,6 +58,7 @@ type Track = {
     image: any;
     progress: number;
     playing: boolean;
+    source: any;
 };
 
 // --- DATE FORMATTING FUNCTION ---
@@ -70,9 +75,9 @@ const formattedDate = getFormattedDate();
 
 // --- SAMPLE DATA ---
 const sampleTopLofi: Track[] = [
-    { id: "1", title: "Counting Sheeps", artist: "sanrio ltd", image: LOFI1, progress: 0, playing: false },
-    { id: "2", title: "Bunny! Bunny!", artist: "sanrio ltd", image: LOFI2, progress: 0, playing: false },
-    { id: "3", title: "Sleepy Melody", artist: "sanrio ltd", image: LOFI3, progress: 0, playing: false },
+    { id: "1", title: "Counting Sheeps", artist: "sanrio ltd", image: LOFI1, progress: 0, playing: false, source: SAMPLE_AUDIO },
+    { id: "2", title: "Bunny! Bunny!", artist: "sanrio ltd", image: LOFI2, progress: 0, playing: false, source: SAMPLE_AUDIO },
+    { id: "3", title: "Sleepy Melody", artist: "sanrio ltd", image: LOFI3, progress: 0, playing: false, source: SAMPLE_AUDIO },
 ];
 
 const sampleExercise = [
@@ -85,14 +90,118 @@ const sampleBGMs = [
     { id: "b2", title: "Bridge by the Lake", image: BGM2 },
 ];
 
-// ---------- COMPONENTS ----------
-// --- EDITED HEADER COMPONENT ---
+// ************************************************************
+// 🚀 1. PLAYBACK CONTEXT DEFINITION
+// ************************************************************
+type PlaybackContextType = {
+    currentTrack: Track;
+    togglePlay: () => Promise<void>;
+    handleTrackSelect: (track: Track) => void;
+};
+
+const PlaybackContext = createContext<PlaybackContextType | undefined>(undefined);
+
+const PlaybackProvider = ({ children }: { children: React.ReactNode }) => {
+    const [currentTrack, setCurrentTrack] = useState<Track>({
+        id: "track1",
+        title: "Counting Sheeps",
+        artist: "sanrio ltd",
+        image: LOFI1,
+        progress: 0.25,
+        playing: false,
+        source: SAMPLE_AUDIO,
+    });
+    
+    const [sound, setSound] = useState<Audio.Sound | null>(null);
+
+    // --- Audio Session Setup (Unchanged) ---
+    useEffect(() => {
+        const configureAudio = async () => {
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: false,
+                playsInSilentModeIOS: true, 
+                shouldDuckAndroid: true,
+                staysActiveInBackground: true, 
+            }).catch(error => console.error('Error setting audio mode:', error));
+        };
+        configureAudio();
+        
+        return sound
+            ? () => { sound.unloadAsync(); }
+            : undefined;
+    }, [sound]); 
+
+    // --- Core Audio Logic (Wrapped in useCallback) ---
+    const loadAndPlayTrack = useCallback(async (track: Track) => {
+        if (sound) {
+            await sound.unloadAsync();
+            setSound(null);
+        }
+        
+        try {
+            const { sound: newSound } = await Audio.Sound.createAsync(
+                track.source, 
+                { shouldPlay: true, isLooping: true }
+            );
+            setSound(newSound);
+            setCurrentTrack({ ...track, playing: true, id: track.id });
+        } catch (error) {
+            console.error('Error loading audio:', error);
+            setCurrentTrack({ ...track, playing: false, id: track.id });
+        }
+    }, [sound]); // Dependency on sound ensures it uses the latest object
+    
+    // 📢 FIX: Using useCallback to ensure togglePlay always has the correct scope and dependencies
+    const togglePlay = useCallback(async () => {
+        if (!sound) {
+            // If sound isn't loaded, load the current track and play it
+            return loadAndPlayTrack(currentTrack);
+        }
+
+        if (currentTrack.playing) {
+            // Pause the music
+            await sound.pauseAsync();
+        } else {
+            // Play the music
+            await sound.playAsync();
+        }
+        // Use a function update to correctly toggle the playing status
+        setCurrentTrack(t => ({ ...t, playing: !t.playing }));
+    }, [sound, currentTrack.playing, currentTrack]); // Dependencies ensure logic is fresh
+    
+    const handleTrackSelect = useCallback((track: Track) => {
+        if (track.id !== currentTrack.id || !currentTrack.playing) {
+            loadAndPlayTrack(track);
+        } else {
+            togglePlay();
+        }
+    }, [currentTrack.id, currentTrack.playing, loadAndPlayTrack, togglePlay]);
+
+    return (
+        <PlaybackContext.Provider value={{ currentTrack, togglePlay, handleTrackSelect }}>
+            {children}
+        </PlaybackContext.Provider>
+    );
+};
+
+// Hook to use the playback context easily
+const usePlayback = () => {
+    const context = useContext(PlaybackContext);
+    if (!context) {
+        throw new Error('usePlayback must be used within a PlaybackProvider');
+    }
+    return context;
+};
+// ************************************************************
+// 🎧 2. COMPONENTS (UPDATED TO USE CONTEXT)
+// ************************************************************
+
+// --- CustomHeader and other utility components remain unchanged ---
 const CustomHeader = () => (
     <View style={styles.header}>
         <Text style={styles.dateText}>{formattedDate}</Text>
         <View style={styles.profileIcon}>
             <Image 
-                // Using misahead asset defined globally
                 source={AVATAR} 
                 style={styles.avatar} 
                 resizeMode="cover" 
@@ -101,7 +210,6 @@ const CustomHeader = () => (
     </View>
 );
 
-// --- SEARCH BAR ---
 const SearchBar = () => (
     <View style={styles.searchRow}>
         <Image source={require("../../assets/images/fireplace.png")} style={styles.fireIconImg} />
@@ -113,7 +221,6 @@ const SearchBar = () => (
     </View>
 );
 
-// --- FILTER CHIPS ---
 const FilterChips = () => {
     const chips = ["All", "Music", "Podcast", "Video"];
     return (
@@ -134,33 +241,23 @@ const FilterChips = () => {
     );
 };
 
-// --- HOME SCREEN ---
+
+// --- HOME SCREEN (Now uses usePlayback hook) ---
 function HomeScreen({ navigation }: any) {
-    // --- FIX: All Hooks must be declared first, unconditionally ---
-    const [currentTrack, setCurrentTrack] = useState<Track>({
-        id: "track1",
-        title: "Bunny!Bunny!",
-        artist: "sanrio ltd",
-        image: LOFI1,
-        progress: 0.25,
-        playing: false,
-    });
-    
+    const { currentTrack, togglePlay, handleTrackSelect } = usePlayback(); 
+
     const [fontsLoaded] = useFonts({
         "Jersey20-Regular": require("../../assets/fonts/Jersey20-Regular.ttf"),
         "Jersey15": require("@/assets/fonts/Jersey15-Regular.ttf"),
         "PressStart2P": require("@/assets/fonts/PressStart2P-Regular.ttf"), 
     });
-    // --- END FIX ---
     
     if (!fontsLoaded) return <View style={styles.container} />;
-
-
-    const togglePlay = () => setCurrentTrack((t) => ({ ...t, playing: !t.playing }));
+    
     const openDetail = (track: Track) => navigation.navigate("PlayerDetail", { track });
 
     const renderTrackItem = ({ item }: { item: Track }) => (
-        <TouchableOpacity onPress={() => setCurrentTrack(item)} style={styles.listItem}>
+        <TouchableOpacity onPress={() => handleTrackSelect(item)} style={styles.listItem}> 
             <Image source={item.image} style={styles.thumbSmall} resizeMode="cover" />
             <View style={{ marginLeft: 8, flex: 1 }}>
                 <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
@@ -190,7 +287,7 @@ function HomeScreen({ navigation }: any) {
                     />
                 </View>
 
-                {/* TOP Exercise */}
+                {/* Other sections unchanged... */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>TOP Exercise Regime</Text>
                     <FlatList
@@ -209,7 +306,6 @@ function HomeScreen({ navigation }: any) {
                     />
                 </View>
 
-                {/* TOP BGMs */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>TOP Relaxing BGMs</Text>
                     <FlatList
@@ -229,7 +325,7 @@ function HomeScreen({ navigation }: any) {
                 </View>
             </ScrollView>
 
-            {/* MINI PLAYER */}
+            {/* MINI PLAYER (Uses context's state and togglePlay) */}
             <TouchableOpacity
                 style={[styles.miniPlayer, { bottom: 60 }]}
                 onPress={() => openDetail(currentTrack)}
@@ -258,27 +354,27 @@ function HomeScreen({ navigation }: any) {
     );
 }
 
-// --- PLAYER DETAIL SCREEN ---
-function PlayerDetail({ route, navigation }: any) {
-    // --- FIX: All Hooks moved to the top ---
+// --- PLAYER DETAIL SCREEN (FIXED FOR SYNC) ---
+function PlayerDetail({ navigation }: any) {
+    // Retrieve current track state AND control function from context
+    const { currentTrack, togglePlay } = usePlayback();
+    
+    // We only need local state for the visual slider (progress bar)
+    const [progress, setProgress] = useState(currentTrack.progress); 
+
     const [fontsLoaded] = useFonts({
         "Jersey20-Regular": require("../../assets/fonts/Jersey20-Regular.ttf"),
         "Jersey15": require("@/assets/fonts/Jersey15-Regular.ttf"),
         "PressStart2P": require("@/assets/fonts/PressStart2P-Regular.ttf"), 
     });
-
-    const { track } = route.params;
-
-    // These Hooks are now declared unconditionally
-    const [playing, setPlaying] = useState(track.playing);
-    const [progress, setProgress] = useState(track.progress);
-    // --- END FIX ---
     
+    // Ensure the local progress state updates if the track changes
+    useEffect(() => {
+        setProgress(currentTrack.progress);
+    }, [currentTrack.id, currentTrack.progress]);
+
     if (!fontsLoaded) return <View style={styles.container} />;
-
-
-    const togglePlay = () => setPlaying((p:boolean) => !p);
-
+    
     return (
         <SafeAreaView style={styles.container}>
             <CustomHeader />
@@ -291,12 +387,12 @@ function PlayerDetail({ route, navigation }: any) {
                     <Image source={DOWN} style={styles.downIcon} />
                 </TouchableOpacity>
 
-                <Image source={track.image} style={styles.largeArt} resizeMode="cover" />
+                {/* Display track details from GLOBAL state for consistency */}
+                <Image source={currentTrack.image} style={styles.largeArt} resizeMode="cover" /> 
+                <Text style={styles.detailTitle}>{currentTrack.title}</Text>
+                <Text style={styles.detailArtist}>{currentTrack.artist}</Text>
 
-                <Text style={styles.detailTitle}>{track.title}</Text>
-                <Text style={styles.detailArtist}>{track.artist}</Text>
-
-                {/* Slider */}
+                {/* Slider (Still relies on local progress state) */}
                 <Slider
                     minimumValue={0}
                     maximumValue={1}
@@ -315,7 +411,13 @@ function PlayerDetail({ route, navigation }: any) {
                 <View style={styles.controlRow}>
                     <TouchableOpacity><Image source={ARROW} style={styles.controlIcon} /></TouchableOpacity>
                     <TouchableOpacity><Image source={PREVIOUS} style={styles.controlIcon} /></TouchableOpacity>
-                    <TouchableOpacity onPress={togglePlay}><Image source={playing ? PAUSE : PLAY} style={styles.playIcon} /></TouchableOpacity>
+                    {/* 💡 SYNCHRONIZED: This calls the reliable context togglePlay function */}
+                    <TouchableOpacity onPress={togglePlay}> 
+                        <Image 
+                            source={currentTrack.playing ? PAUSE : PLAY} 
+                            style={styles.playIcon} 
+                        />
+                    </TouchableOpacity>
                     <TouchableOpacity><Image source={ADVANCE} style={styles.controlIcon} /></TouchableOpacity>
                     <TouchableOpacity><Image source={REPEAT} style={styles.controlIcon} /></TouchableOpacity>
                 </View>
@@ -341,18 +443,22 @@ function PlayerDetail({ route, navigation }: any) {
     );
 }
 
-// --- STACK ---
+// ************************************************************
+// 🌐 3. STACK WRAPPER
+// ************************************************************
 const Stack = createStackNavigator();
 export default function JourneyStack() {
     return (
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="PlayerDetail" component={PlayerDetail} />
-        </Stack.Navigator>
+        <PlaybackProvider> 
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="Home" component={HomeScreen} />
+                <Stack.Screen name="PlayerDetail" component={PlayerDetail} />
+            </Stack.Navigator>
+        </PlaybackProvider>
     );
 }
 
-// --- STYLES ---
+// --- STYLES (Unchanged) ---
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#DFF6F9" },
     // --- EDITED HEADER STYLES ---
@@ -363,13 +469,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20, 
         paddingVertical: 15, 
         backgroundColor: '#FFF5F5', 
-        marginTop: 0 // Using marginTop 0 as requested for this header
+        marginTop: 0 
     },
     dateText: { 
         color: '#000', 
-        fontSize: 10, 
+        fontSize: 16, 
         fontWeight: '600', 
-        fontFamily: 'PressStart2P' // Applied PressStart2P font
+        fontFamily: 'PressStart2P' 
     },
     profileIcon: { 
         width: 40, 
