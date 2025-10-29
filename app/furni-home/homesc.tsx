@@ -300,7 +300,7 @@ export default function HomeScreen() {
 
             <TouchableOpacity
               style={styles.navButton}
-            //onPress={() => router.push("/self-care")} // Keeping commented as in original
+              onPress={() => router.push("../selfcare/journey")}
             >
               <Image source={assets.selfcare} style={styles.customIcon} />
               <Text style={styles.navLabel}>self-care journey</Text>
