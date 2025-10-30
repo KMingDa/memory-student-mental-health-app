@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View
 } from "react-native";
+import { useCurrency } from "../context/CurrencyContext";
 
 type WeeklyQuestProps = {
   visible: boolean;
@@ -34,7 +35,7 @@ export default function WeeklyQuestModal({
   const [checkedIds, setCheckedIds] = useState<number[]>([]);
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [questOrder, setQuestOrder] = useState<QuestItem[]>([]);
-  const [currency, setCurrency] = useState(0); //currency
+  const { addCurrency } = useCurrency(); //currency
 
   const scrollRef = useRef<ScrollView>(null);
 
@@ -55,25 +56,26 @@ export default function WeeklyQuestModal({
     setQuestOrder(questData);
   }, []);
 
-  const handlePress = (questId: number) => {
+  const handlePress = async (questId: number) => {
     if (checkedIds.includes(questId)) return;
 
     setCheckedIds(prev => [...prev, questId]);
 
-    // 移动已完成任务到最底部
+    // Move completed quest to bottom
     const completedQuest = questOrder.find(q => q.id === questId)!;
     const remaining = questOrder.filter(q => q.id !== questId);
     setQuestOrder([...remaining, completedQuest]);
 
-    // update the currency
+    // 💰 Add reward to global currency
     const reward = parseInt(completedQuest.reward.replace("+", ""), 10);
-    setCurrency(prev => prev + reward);
+    await addCurrency(reward);
 
-    // 滑动到底部
+    // Scroll to bottom
     setTimeout(() => {
       scrollRef.current?.scrollToEnd({ animated: true });
     }, 200);
-  };
+  }; //to update the currency immediately upon checking a quest
+
 
   if (!fontsLoaded) return null;
 

@@ -2,25 +2,26 @@ import Slider from "@react-native-community/slider";
 import { createStackNavigator } from "@react-navigation/stack";
 import { Audio } from 'expo-av';
 import { useFonts } from "expo-font";
+import { useRouter } from "expo-router";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    Image,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 const { width } = Dimensions.get("window");
 
 // --- LOCAL IMAGE ASSETS ---
 // Note: Assuming these assets are correctly located relative to this file
-const AVATAR = require("../../assets/images/misahead.png"); 
+const AVATAR = require("../../assets/images/misahead.png");
 const HOME_ICON = require('@/assets/images/home.png');
 const BEAR_ICON = require('@/assets/images/bear.png');
 const TROPHY_ICON = require('@/assets/images/trophy.png');
@@ -69,10 +70,10 @@ const getFormattedDate = () => {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
-    }).replace(/ /g, ' '); 
+    }).replace(/ /g, ' ');
 };
 
-const formattedDate = getFormattedDate(); 
+const formattedDate = getFormattedDate();
 
 // --- SAMPLE DATA ---
 const sampleTopLofi: Track[] = [
@@ -112,7 +113,7 @@ const PlaybackProvider = ({ children }: { children: React.ReactNode }) => {
         playing: false,
         source: SAMPLE_AUDIO,
     });
-    
+
     const [sound, setSound] = useState<Audio.Sound | null>(null);
 
     // --- Audio Session Setup (Unchanged) ---
@@ -120,17 +121,17 @@ const PlaybackProvider = ({ children }: { children: React.ReactNode }) => {
         const configureAudio = async () => {
             await Audio.setAudioModeAsync({
                 allowsRecordingIOS: false,
-                playsInSilentModeIOS: true, 
+                playsInSilentModeIOS: true,
                 shouldDuckAndroid: true,
-                staysActiveInBackground: true, 
+                staysActiveInBackground: true,
             }).catch(error => console.error('Error setting audio mode:', error));
         };
         configureAudio();
-        
+
         return sound
             ? () => { sound.unloadAsync(); }
             : undefined;
-    }, [sound]); 
+    }, [sound]);
 
     // --- Core Audio Logic (Wrapped in useCallback) ---
     const loadAndPlayTrack = useCallback(async (track: Track) => {
@@ -138,10 +139,10 @@ const PlaybackProvider = ({ children }: { children: React.ReactNode }) => {
             await sound.unloadAsync();
             setSound(null);
         }
-        
+
         try {
             const { sound: newSound } = await Audio.Sound.createAsync(
-                track.source, 
+                track.source,
                 { shouldPlay: true, isLooping: true }
             );
             setSound(newSound);
@@ -150,8 +151,8 @@ const PlaybackProvider = ({ children }: { children: React.ReactNode }) => {
             console.error('Error loading audio:', error);
             setCurrentTrack({ ...track, playing: false, id: track.id });
         }
-    }, [sound]); 
-    
+    }, [sound]);
+
     const togglePlay = useCallback(async () => {
         if (!sound) {
             return loadAndPlayTrack(currentTrack);
@@ -163,8 +164,8 @@ const PlaybackProvider = ({ children }: { children: React.ReactNode }) => {
             await sound.playAsync();
         }
         setCurrentTrack(t => ({ ...t, playing: !t.playing }));
-    }, [sound, currentTrack.playing, currentTrack]); 
-    
+    }, [sound, currentTrack.playing, currentTrack]);
+
     const handleTrackSelect = useCallback((track: Track) => {
         if (track.id !== currentTrack.id || !currentTrack.playing) {
             loadAndPlayTrack(track);
@@ -197,10 +198,10 @@ const CustomHeader = () => (
     <View style={styles.header}>
         <Text style={styles.dateText}>{formattedDate}</Text>
         <View style={styles.profileIcon}>
-            <Image 
-                source={AVATAR} 
-                style={styles.avatar} 
-                resizeMode="cover" 
+            <Image
+                source={AVATAR}
+                style={styles.avatar}
+                resizeMode="cover"
             />
         </View>
     </View>
@@ -256,21 +257,22 @@ const PixelDialog = ({ visible, onClose }: { visible: boolean, onClose: () => vo
 
 // --- HOME SCREEN (Now uses usePlayback hook) ---
 function HomeScreen({ navigation }: any) {
-    const { currentTrack, togglePlay, handleTrackSelect } = usePlayback(); 
+    const router = useRouter();
+    const { currentTrack, togglePlay, handleTrackSelect } = usePlayback();
     const [showDialog, setShowDialog] = useState(false); // State for the new bear button dialog
 
     const [fontsLoaded] = useFonts({
         "Jersey20-Regular": require("../../assets/fonts/Jersey20-Regular.ttf"),
         "Jersey15": require("@/assets/fonts/Jersey15-Regular.ttf"),
-        "PressStart2P": require("@/assets/fonts/PressStart2P-Regular.ttf"), 
+        "PressStart2P": require("@/assets/fonts/PressStart2P-Regular.ttf"),
     });
-    
+
     if (!fontsLoaded) return <View style={styles.container} />;
-    
+
     const openDetail = (track: Track) => navigation.navigate("PlayerDetail", { track });
 
     const renderTrackItem = ({ item }: { item: Track }) => (
-        <TouchableOpacity onPress={() => handleTrackSelect(item)} style={styles.listItem}> 
+        <TouchableOpacity onPress={() => handleTrackSelect(item)} style={styles.listItem}>
             <Image source={item.image} style={styles.thumbSmall} resizeMode="cover" />
             <View style={{ marginLeft: 8, flex: 1 }}>
                 <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
@@ -286,7 +288,7 @@ function HomeScreen({ navigation }: any) {
             <FilterChips />
 
             {/* Added paddingBottom to the ScrollView to account for both mini-player and bottom nav */}
-            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 180 }}> 
+            <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 180 }}>
                 {/* TOP Lofi Music */}
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>TOP Lofi Music</Text>
@@ -362,18 +364,18 @@ function HomeScreen({ navigation }: any) {
                 {/* Mapping Expo Router paths to React Navigation (Home is current screen) 
                 Note: 'furni-home/homesc' and 'leaderboard/lead' are mapped to existing stack screens
                 */}
-                <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push('../../furni-home/homesc')}>
                     <Image source={HOME_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-        
+
                 <TouchableOpacity style={styles.navItem} onPress={() => setShowDialog(true)}>
                     <Image source={BEAR_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-        
+
                 <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PlayerDetail')}>
                     <Image source={TROPHY_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-        
+
                 <TouchableOpacity style={styles.navItem}>
                     <Image source={SETTINGS_ICON} style={styles.navImage} />
                 </TouchableOpacity>
@@ -387,22 +389,22 @@ function HomeScreen({ navigation }: any) {
 // --- PLAYER DETAIL SCREEN (FIXED FOR SYNC) ---
 function PlayerDetail({ navigation }: any) {
     const { currentTrack, togglePlay } = usePlayback();
-    const [showDialog, setShowDialog] = useState(false); 
-    
-    const [progress, setProgress] = useState(currentTrack.progress); 
+    const [showDialog, setShowDialog] = useState(false);
+
+    const [progress, setProgress] = useState(currentTrack.progress);
 
     const [fontsLoaded] = useFonts({
         "Jersey20-Regular": require("../../assets/fonts/Jersey20-Regular.ttf"),
         "Jersey15": require("@/assets/fonts/Jersey15-Regular.ttf"),
-        "PressStart2P": require("@/assets/fonts/PressStart2P-Regular.ttf"), 
+        "PressStart2P": require("@/assets/fonts/PressStart2P-Regular.ttf"),
     });
-    
+
     useEffect(() => {
         setProgress(currentTrack.progress);
     }, [currentTrack.id, currentTrack.progress]);
 
     if (!fontsLoaded) return <View style={styles.container} />;
-    
+
     return (
         <SafeAreaView style={styles.container}>
             <CustomHeader />
@@ -416,7 +418,7 @@ function PlayerDetail({ navigation }: any) {
                 </TouchableOpacity>
 
                 {/* Display track details from GLOBAL state for consistency */}
-                <Image source={currentTrack.image} style={styles.largeArt} resizeMode="cover" /> 
+                <Image source={currentTrack.image} style={styles.largeArt} resizeMode="cover" />
                 <Text style={styles.detailTitle}>{currentTrack.title}</Text>
                 <Text style={styles.detailArtist}>{currentTrack.artist}</Text>
 
@@ -440,10 +442,10 @@ function PlayerDetail({ navigation }: any) {
                     <TouchableOpacity><Image source={ARROW} style={styles.controlIcon} /></TouchableOpacity>
                     <TouchableOpacity><Image source={PREVIOUS} style={styles.controlIcon} /></TouchableOpacity>
                     {/* SYNCHRONIZED */}
-                    <TouchableOpacity onPress={togglePlay}> 
-                        <Image 
-                            source={currentTrack.playing ? PAUSE : PLAY} 
-                            style={styles.playIcon} 
+                    <TouchableOpacity onPress={togglePlay}>
+                        <Image
+                            source={currentTrack.playing ? PAUSE : PLAY}
+                            style={styles.playIcon}
                         />
                     </TouchableOpacity>
                     <TouchableOpacity><Image source={ADVANCE} style={styles.controlIcon} /></TouchableOpacity>
@@ -465,15 +467,15 @@ function PlayerDetail({ navigation }: any) {
                 <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('Home')}>
                     <Image source={HOME_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-        
+
                 <TouchableOpacity style={styles.navItem} onPress={() => setShowDialog(true)}>
                     <Image source={BEAR_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-        
+
                 <TouchableOpacity style={styles.navItem} onPress={() => navigation.navigate('PlayerDetail')}>
                     <Image source={TROPHY_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-        
+
                 <TouchableOpacity style={styles.navItem}>
                     <Image source={SETTINGS_ICON} style={styles.navImage} />
                 </TouchableOpacity>
@@ -490,7 +492,7 @@ function PlayerDetail({ navigation }: any) {
 const Stack = createStackNavigator();
 export default function JourneyStack() {
     return (
-        <PlaybackProvider> 
+        <PlaybackProvider>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
                 <Stack.Screen name="Home" component={HomeScreen} />
                 <Stack.Screen name="PlayerDetail" component={PlayerDetail} />
@@ -502,7 +504,7 @@ export default function JourneyStack() {
 // --- STYLES (UPDATED for new Bottom Nav and Mini-Player positioning) ---
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#DFF6F9" },
-    
+
     // Dialog styles (Placeholder)
     dialogOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 50 },
     dialogContent: { padding: 20, backgroundColor: 'white', borderRadius: 10, width: '80%', alignItems: 'center' },
@@ -511,33 +513,33 @@ const styles = StyleSheet.create({
     dialogButtonText: { color: '#2E6F79' },
 
     // --- EDITED HEADER STYLES ---
-    header: { 
-        flexDirection: 'row', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        paddingHorizontal: 20, 
-        paddingVertical: 15, 
-        backgroundColor: '#FFF5F5', 
-        marginTop: 0 
+    header: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingHorizontal: 20,
+        paddingVertical: 15,
+        backgroundColor: '#FFF5F5',
+        marginTop: 0
     },
-    dateText: { 
-        color: '#000', 
-        fontSize: 18, 
-        fontWeight: '600', 
+    dateText: {
+        color: '#000',
+        fontSize: 18,
+        fontWeight: '600',
         fontFamily: 'Jersey15' // Corrected font name based on other samples
     },
-    profileIcon: { 
-        width: 40, 
-        height: 40, 
-        borderRadius: 20, 
-        backgroundColor: '#fff', 
-        justifyContent: 'center', 
-        alignItems: 'center' 
+    profileIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#fff',
+        justifyContent: 'center',
+        alignItems: 'center'
     },
-    avatar: { 
-        width: 28, 
-        height: 28, 
-        borderRadius: 14, 
+    avatar: {
+        width: 28,
+        height: 28,
+        borderRadius: 14,
         resizeMode: "cover"
     },
 
@@ -570,17 +572,17 @@ const styles = StyleSheet.create({
     // 💡 MINI PLAYER STYLE ADJUSTED: Pushed up by calculating the bottom nav height (~78px) + -30 marginBottom
     // 78 (nav height) + 64 (miniplayer height) + 15 (padding) = ~157px total space needed
     // Setting bottom: 100 will move it up past the nav bar.
-    miniPlayer: { 
-        position: "absolute", 
-        width: "100%", 
-        height: 64, 
-        backgroundColor: "#a4d1d2ff", 
-        borderRadius: 0, 
-        padding: 8, 
-        flexDirection: "row", 
-        alignItems: "center", 
-        elevation: 8, 
-        zIndex: 20, 
+    miniPlayer: {
+        position: "absolute",
+        width: "100%",
+        height: 64,
+        backgroundColor: "#a4d1d2ff",
+        borderRadius: 0,
+        padding: 8,
+        flexDirection: "row",
+        alignItems: "center",
+        elevation: 8,
+        zIndex: 20,
         bottom: 80, // <-- PUSHED UP
     },
     miniThumb: { width: 48, height: 48, borderRadius: 6 },
@@ -589,19 +591,19 @@ const styles = StyleSheet.create({
     playButton: { width: 60, height: 60, borderRadius: 30, alignItems: "center", justifyContent: "center" },
 
     // 💡 NEW BOTTOM NAVIGATION STYLES (FROM USER SNIPPET)
-    bottomNav: { 
-        flexDirection: 'row', 
-        backgroundColor: '#fff', 
-        paddingVertical: 15, 
-        paddingHorizontal: 20, 
-        justifyContent: 'space-around', 
-        borderTopWidth: 1, 
-        borderTopColor: '#E0E0E0', 
+    bottomNav: {
+        flexDirection: 'row',
+        backgroundColor: '#fff',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        justifyContent: 'space-around',
+        borderTopWidth: 1,
+        borderTopColor: '#E0E0E0',
         marginBottom: 2, // Retaining the negative margin as requested
-        width: '100%', 
-        position: 'absolute', 
+        width: '100%',
+        position: 'absolute',
         bottom: 0,
-        zIndex: 10 
+        zIndex: 10
     },
     navItem: {
         alignItems: 'center',

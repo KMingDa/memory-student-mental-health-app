@@ -2,14 +2,14 @@ import { useFonts } from "expo-font";
 import { useRouter } from "expo-router";
 import { useState } from 'react';
 import {
-  Dimensions,
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    Image,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import PixelDialog from '../memory-modal/popout';
 
@@ -17,7 +17,7 @@ const { width } = Dimensions.get("window");
 
 // --- ASSET IMPORTS ---
 // Re-mapping assets based on the structure of the DailyNews file for consistency
-const AVATAR = require("../../assets/images/misahead.png"); 
+const AVATAR = require("../../assets/images/misahead.png");
 const HOME_ICON = require('../../assets/images/home.png'); // Adjusted to relative path
 const BEAR_ICON = require('../../assets/images/bear.png');
 const TROPHY_ICON = require('../../assets/images/trophy.png');
@@ -30,9 +30,9 @@ const getFormattedDate = () => {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
-    }).replace(/ /g, ' '); 
+    }).replace(/ /g, ' ');
 };
-const formattedDate = getFormattedDate(); 
+const formattedDate = getFormattedDate();
 
 // --- COMPONENT ---
 export default function App() {
@@ -110,32 +110,32 @@ export default function App() {
 
             {/* 🔄 NEW STANDARDIZED BOTTOM NAVIGATION BAR */}
             <View style={styles.bottomNav}>
-                <TouchableOpacity 
-                    style={styles.navItem} 
-                    onPress={() => router.push('../../furni-home/homesc')}
+                <TouchableOpacity
+                    style={styles.navItem}
+                    onPress={() => router.push('../furni-home/homesc')}
                 >
                     <Image source={HOME_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-        
-                <TouchableOpacity 
-                    style={styles.navItem} 
+
+                <TouchableOpacity
+                    style={styles.navItem}
                     onPress={() => setShowDialog(true)}
                 >
                     <Image source={BEAR_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-        
-                <TouchableOpacity 
-                    style={styles.navItem} 
+
+                <TouchableOpacity
+                    style={styles.navItem}
                     onPress={() => router.push('../../leaderboard/lead')}
                 >
                     <Image source={TROPHY_ICON} style={styles.navImage} />
                 </TouchableOpacity>
-        
+
                 <TouchableOpacity style={styles.navItem}>
                     <Image source={SETTINGS_ICON} style={styles.navImage} />
                 </TouchableOpacity>
             </View>
-            
+
             <PixelDialog visible={showDialog} onClose={() => setShowDialog(false)} />
         </SafeAreaView>
     );
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#FFE6FE",
     },
-    
+
     // --- NEW STANDARDIZED HEADER STYLES ---
     header: {
         flexDirection: 'row',
@@ -155,13 +155,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 15,
         backgroundColor: '#FFF5F5',
-        marginTop: 5, 
+        marginTop: 5,
     },
     dateText: {
         fontSize: 18,
         fontWeight: 'bold',
         color: '#333',
-        fontFamily: 'Jersey15', 
+        fontFamily: 'Jersey15',
     },
     profileIcon: {
         width: 32,
@@ -221,18 +221,18 @@ const styles = StyleSheet.create({
         lineHeight: 18,
         textAlign: "justify",
     },
-    
-    bottomNav: { 
-        flexDirection: 'row', 
-        backgroundColor: '#fff', 
-        paddingVertical: 15, 
-        paddingHorizontal: 20, 
-        justifyContent: 'space-around', 
-        borderTopWidth: 1, 
-        borderTopColor: '#E0E0E0', 
+
+    bottomNav: {
+        flexDirection: 'row',
+        backgroundColor: '#fff',
+        paddingVertical: 15,
+        paddingHorizontal: 20,
+        justifyContent: 'space-around',
+        borderTopWidth: 1,
+        borderTopColor: '#E0E0E0',
         marginBottom: 0,
-        width: '100%', 
-        position: 'absolute', 
+        width: '100%',
+        position: 'absolute',
         bottom: 0,
         zIndex: 50, // Ensures visibility
     },
