@@ -14,7 +14,6 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-// 1. 🥇 Import useCurrency
 import { useCurrency } from "../context/CurrencyContext";
 
 const assets = {
@@ -76,7 +75,6 @@ export default function ProfileMain() {
     // Dialog State
     const [showDialog, setShowDialog] = useState(false); 
 
-    // 2. 💰 Get the currency value from context
     const { currency } = useCurrency();
 
     const [fontsLoaded] = useFonts({
