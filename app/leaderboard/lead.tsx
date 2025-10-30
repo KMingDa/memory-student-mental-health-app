@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     View,
 } from "react-native";
+import { useCurrency } from "../context/CurrencyContext";
 
 // --- GLOBAL ASSET PATHS (For new nav bar) ---
 const HOME_ICON = require("../../assets/images/home.png"); 
@@ -38,8 +39,8 @@ const globalLeaderboard: LeaderboardEntry[] = [
     { id: "5", name: "Aglaea", coins: 27569 },
     { id: "6", name: "Anaxa", coins: 27568 },
     { id: "7", name: "Mydeimos", coins: 26000 },
-    { id: "8", name: "Cifera", coins: 22000 },
-    { id: "9", name: "Cyrene", coins: 19888 },
+    { id: "8", "name": "Cifera", coins: 22000 },
+    { id: "9", "name": "Cyrene", coins: 19888 },
 ];
 
 const baseLocalLeaderboard: LeaderboardEntry[] = [
@@ -108,6 +109,9 @@ export default function LeaderboardScreen() {
     const [tab, setTab] = useState<"global" | "local">("global");
     const [currentUserName, setCurrentUserName] = useState("Guest");
 
+    // 🏆 FIX: Destructure 'currency' (the correct property name) instead of 'currentCoins'
+    const { currency } = useCurrency(); 
+
     const [fontsLoaded] = useFonts({
         Jersey20: require("../../assets/fonts/Jersey20-Regular.ttf"),
         Jersey15: require("@/assets/fonts/Jersey15-Regular.ttf"), 
@@ -135,18 +139,20 @@ export default function LeaderboardScreen() {
     const year = today.getFullYear();
     const currentDateString = `${day} ${month} ${year}`;
 
+    // Update localLeaderboard to use the fetched 'currency' value
     const localLeaderboard = baseLocalLeaderboard.map((entry) =>
         entry.id === "9" && entry.name === "Misa"
-            ? { ...entry, name: currentUserName }
+            ? { ...entry, name: currentUserName, coins: currency } // Use 'currency'
             : entry
     );
 
     const leaderboardData = tab === "global" ? globalLeaderboard : localLeaderboard;
 
+    // Update currentUser to use the fetched 'currency' value
     const currentUser: LeaderboardEntry = {
         id: "me",
         name: currentUserName,
-        coins: 1500,
+        coins: currency, // Use the fetched 'currency'
         percentile: "1.0%",
         rank: 1234,
     };
@@ -277,7 +283,7 @@ export default function LeaderboardScreen() {
     );
 }
 
-// --- Styles ---
+// --- Styles (Unchanged) ---
 const styles = StyleSheet.create({
     container: { flex: 1, backgroundColor: "#e6dcf6", padding: 0 },
     date: { textAlign: "left", fontSize: 20, fontFamily: "Jersey20", marginBottom: 12, color: "#222" },
