@@ -14,6 +14,8 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+// 1. 🥇 Import useCurrency
+import { useCurrency } from "../context/CurrencyContext";
 
 const assets = {
     background: require("../../assets/profileimages/profilebg.png"),
@@ -74,6 +76,9 @@ export default function ProfileMain() {
     // Dialog State
     const [showDialog, setShowDialog] = useState(false); 
 
+    // 2. 💰 Get the currency value from context
+    const { currency } = useCurrency();
+
     const [fontsLoaded] = useFonts({
         jersey15: require("../../assets/fonts/Jersey15-Regular.ttf"),
     });
@@ -100,7 +105,7 @@ export default function ProfileMain() {
                     if (storedRole) {
                         setCurrentRole(storedRole);
                     } else {
-                         setCurrentRole("Newbie Tester"); 
+                        setCurrentRole("Newbie Tester"); 
                     }
                     
                     // 3. LOAD ACHIEVEMENT TIER (Read-Only)
@@ -108,8 +113,8 @@ export default function ProfileMain() {
                     
                     // Defense mechanism: If title is null or accidentally set to an editable role, reset it.
                     if (!storedTitle || AVAILABLE_TITLES.some(t => t.title === storedTitle)) {
-                         storedTitle = ACHIEVEMENT_TITLE;
-                         await AsyncStorage.setItem("currentTitle", ACHIEVEMENT_TITLE);
+                        storedTitle = ACHIEVEMENT_TITLE;
+                        await AsyncStorage.setItem("currentTitle", ACHIEVEMENT_TITLE);
                     }
                     setCurrentTitle(storedTitle);
 
@@ -199,13 +204,15 @@ export default function ProfileMain() {
 
                         {/* Currency + Title */}
                         <View style={styles.statsRow}>
+                            {/* NOTE: Currency 1 is left hardcoded as 200 */}
                             <View style={styles.currencyRow}>
                                 <Image source={assets.currency1} style={styles.currencyIcon} />
-                                <Text style={styles.statText}>200</Text>
+                                <Text style={styles.statText}>200</Text> 
                             </View>
+                            {/* 3. 💸 Currency 2 now uses the dynamic 'currency' value */}
                             <View style={styles.currencyRow}>
                                 <Image source={assets.currency2} style={styles.currencyIcon} />
-                                <Text style={styles.statText}>1500</Text>
+                                <Text style={styles.statText}>{currency.toLocaleString()}</Text>
                             </View>
                         </View>
                         {/* CURRENT TIER DISPLAY (Read-only achievement tier) */}
