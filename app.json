@@ -21,7 +21,13 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.icedmatcha.Memory"
+      "package": "com.icedmatcha.Memory",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -50,6 +56,12 @@
       "eas": {
         "projectId": "38012fc8-852b-4dd3-9d06-0105c094a49c"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/38012fc8-852b-4dd3-9d06-0105c094a49c"
     }
   }
 }

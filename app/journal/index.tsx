@@ -3,13 +3,13 @@ import { useFonts } from 'expo-font';
 import { useFocusEffect, useRouter } from 'expo-router'; // 2. Import useFocusEffect
 import { useCallback, useState } from 'react'; // 3. Import necessary hooks/React
 import {
-  Image,
-  SafeAreaView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    Image,
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import PixelDialog from '../memory-modal/popout'; // adjust path if needed
 
@@ -17,7 +17,7 @@ export default function JournalMainPage() {
     const router = useRouter();
     const [showDialog, setShowDialog] = useState(false); // <-- popout state
     // 4. State for the username
-    const [userName, setUserName] = useState("Misa"); 
+    const [userName, setUserName] = useState(""); 
 
     const [fontsLoaded] = useFonts({
         'PressStart2P-Regular': require('../../assets/fonts/PressStart2P-Regular.ttf'),

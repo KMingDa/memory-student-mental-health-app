@@ -10,5 +10,23 @@
     "diary": "Chill",
     "mood": "relaxed",
     "predicted_next_mood": "relaxed"
+  },
+  {
+    "date": "31 OCT 2025",
+    "diary": "Hi",
+    "mood": "happy",
+    "predicted_next_mood": "happy"
+  },
+  {
+    "date": "30 OCT 2025",
+    "diary": "Hi",
+    "mood": "happy",
+    "predicted_next_mood": "happy"
+  },
+  {
+    "date": "31 OCT 2025",
+    "diary": "Hi",
+    "mood": "cool",
+    "predicted_next_mood": "happy"
   }
 ]

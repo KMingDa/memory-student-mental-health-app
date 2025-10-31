@@ -15,6 +15,7 @@ export default function EntryPage() {
   const router = useRouter();
   const { mood } = useLocalSearchParams<{ mood: string }>();
   const [showDialog, setShowDialog] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [fontsLoaded] = useFonts({
     'Jersey15': require('../../../assets/fonts/Jersey15-Regular.ttf'),
     'Jersey10': require('../../../assets/fonts/Jersey10-Regular.ttf'),
@@ -44,10 +45,13 @@ export default function EntryPage() {
   // Get current diary text for selected date
   const currentDiaryText = diaryEntries[selectedDate] || '';
 
-  // Load diary entries from AsyncStorage on component mount
   useEffect(() => {
-    loadDiaryEntries();
-  }, []);
+  const loadUserEmail = async () => {
+    const storedEmail = await AsyncStorage.getItem("currentUserEmail");
+    setUserEmail(storedEmail);
+  };
+  loadUserEmail();
+}, []);
 
   // Save diary entries whenever they change
   useEffect(() => {
@@ -57,25 +61,33 @@ export default function EntryPage() {
   }, [diaryEntries, isLoading]);
 
   const loadDiaryEntries = async () => {
-    try {
-      const stored = await AsyncStorage.getItem('diaryEntries');
-      if (stored) {
-        setDiaryEntries(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error('Error loading diary entries:', error);
-    } finally {
-      setIsLoading(false);
+  try {
+    if (!userEmail) return;
+    const stored = await AsyncStorage.getItem(`diaryEntries_${userEmail}`);
+    if (stored) {
+      setDiaryEntries(JSON.parse(stored));
     }
-  };
+  } catch (error) {
+    console.error("Error loading diary entries:", error);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const saveDiaryEntries = async () => {
-    try {
-      await AsyncStorage.setItem('diaryEntries', JSON.stringify(diaryEntries));
-    } catch (error) {
-      console.error('Error saving diary entries:', error);
+  try {
+    if (!userEmail) return;
+    await AsyncStorage.setItem(`diaryEntries_${userEmail}`, JSON.stringify(diaryEntries));
+  } catch (error) {
+    console.error("Error saving diary entries:", error);
+  }
+};
+
+  useEffect(() => {
+    if (userEmail) {
+      loadDiaryEntries();
     }
-  };
+  }, [userEmail]);
 
   // Generate available years (from 2020 to current year)
   const generateYearOptions = () => {
@@ -208,7 +220,8 @@ export default function EntryPage() {
       console.log('Saved entries:', diaryEntries);
       router.push("/journal/chat/page");
     } catch (err) {
-      Alert.alert("Error", "Failed to save entry to backend");
+      //Alert.alert("Error", "Failed to save entry to backend");
+      router.push("/journal/chat/page");
     }
   };
 

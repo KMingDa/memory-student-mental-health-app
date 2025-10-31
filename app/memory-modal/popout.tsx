@@ -1,4 +1,10 @@
+import { ChatMessage, chatStore } from "@/utils/chat-store";
+import { generateAPIUrl } from "@/utils/utils";
+import { useChat } from "@ai-sdk/react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DefaultChatTransport } from "ai";
 import * as Font from "expo-font";
+import { fetch as expoFetch } from "expo/fetch";
 import { useEffect, useRef, useState } from "react";
 import {
   Image,
@@ -14,12 +20,6 @@ import {
   View,
 } from "react-native";
 
-import { ChatMessage, chatStore } from "@/utils/chat-store";
-import { generateAPIUrl } from "@/utils/utils";
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport } from "ai";
-import { fetch as expoFetch } from "expo/fetch";
-
 export default function PixelDialog({ visible, onClose }: { visible: boolean; onClose: () => void }) {
   const [fontsLoaded, setFontsLoaded] = useState(false);
   const [inputText, setInputText] = useState("");
@@ -29,6 +29,8 @@ export default function PixelDialog({ visible, onClose }: { visible: boolean; on
   const [hasLoadedHistory, setHasLoadedHistory] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [confirmClear, setConfirmClear] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
 
   // Load fonts
   useEffect(() => {
@@ -38,13 +40,21 @@ export default function PixelDialog({ visible, onClose }: { visible: boolean; on
     }).then(() => setFontsLoaded(true));
   }, []);
 
+  useEffect(() => {
+  AsyncStorage.getItem("currentUserEmail").then((email) => {
+    if (email) setUserEmail(email);
+  });
+}, []);
+
   // Load persisted messages
   useEffect(() => {
-    chatStore.load("chat_history").then((loaded) => {
+    if (!userEmail) return; // wait until email is loaded
+    const chatKey = `chat_history_${userEmail}`;
+    chatStore.load(chatKey).then((loaded) => {
       setHistory(loaded);
       setHasLoadedHistory(true);
     });
-  }, []);
+  }, [userEmail]);
 
   // Auto-scroll after history or dotCount changes
   useEffect(() => {
@@ -101,8 +111,12 @@ export default function PixelDialog({ visible, onClose }: { visible: boolean; on
 
   // Save history
   useEffect(() => {
-    if (status === "ready" && hasLoadedHistory) chatStore.save("chat_history", history);
-  }, [status, history, hasLoadedHistory]);
+    if (!userEmail || !hasLoadedHistory) return;
+    if (status === "ready") {
+      const chatKey = `chat_history_${userEmail}`;
+      chatStore.save(chatKey, history);
+    }
+  }, [status, history, hasLoadedHistory, userEmail]);
 
   const handleSend = () => {
     if (!inputText.trim()) return;
@@ -118,7 +132,9 @@ export default function PixelDialog({ visible, onClose }: { visible: boolean; on
   };
 
   const clearHistory = async () => {
-    await chatStore.clear("chat_history");
+    if (!userEmail) return;
+    const chatKey = `chat_history_${userEmail}`;
+    await chatStore.clear(chatKey);
     setHistory([]);
     setConfirmClear(false);
     setShowDropdown(false);

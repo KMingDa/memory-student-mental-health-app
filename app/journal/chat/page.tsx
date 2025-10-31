@@ -1,4 +1,5 @@
 // ChatPage.tsx
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFonts } from "expo-font";
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
@@ -13,7 +14,7 @@ export default function ChatPage() {
   });
 
   const [showDialog, setShowDialog] = useState(false);
-
+  const [userName, setUserName] = useState('');
   const today = new Date();
   const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEPT','OCT','NOV','DEC'];
   const formattedDate = `${today.getDate().toString().padStart(2,'0')} ${months[today.getMonth()]} ${today.getFullYear()}`;
@@ -38,10 +39,16 @@ export default function ChatPage() {
     animateMessage(msgQuest, 5500);
   }, []);
 
+    useEffect(() => {
+    AsyncStorage.getItem("currentUserName").then((name) => {
+      if (name) setUserName(name);
+    });
+  }, []);
+
   if (!fontsLoaded) return null;
 
   const messages = [
-    "Good evening, Misa.",
+    `Good evening, ${userName}.`,
     "I'm 'Memory' and I'm here to be your companion!",
     "My duty here is to guide you through your good or bad times together!",
     "Come find me at 'home'!",

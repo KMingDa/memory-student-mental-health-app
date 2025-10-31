@@ -7,7 +7,7 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB  # 改成适合小数据的模型
+from sklearn.naive_bayes import MultinomialNB
 import numpy as np
 
 nltk.download('punkt')
@@ -51,7 +51,6 @@ def save_entries(entries: List[dict]):
 
 def train_incremental(entries: List[dict], window_size=7):
     if len(entries) < 2:
-        # 用第一条数据初始化模型
         first = entries[0]
         X_text = [preprocess(first["diary"]) + " " + first["mood"]]
         y = [first["mood"]]
